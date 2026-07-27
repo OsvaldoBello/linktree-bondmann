@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-27 17:13 UTC | `688e80b` | `main` |
+| 2026-07-27 17:18 UTC | `a7ff485` | `fix/ci-semgrep-and-doc-check` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -234,7 +234,7 @@ public/brand/                  ← logo.svg, favicons
 Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fase não fecha sem ele.
 
 <!-- AUTO:progress:start -->
-`████████░░░░░░░░░░░░` **39%** — 13 de 33 itens concluídos
+`████████░░░░░░░░░░░░` **42%** — 14 de 33 itens concluídos
 <!-- AUTO:progress:end -->
 
 ### F0 — Fundação
@@ -253,10 +253,10 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 - [x] Todas as actions pinadas por SHA completo
 - [x] gitleaks, CodeQL, Semgrep, zizmor
 - [x] Dependabot (npm + github-actions), `npm ci --ignore-scripts`
-- [ ] Proteção de `main`: checks obrigatórios, revisão, commits assinados, histórico linear
+- [x] Proteção de `main`: checks obrigatórios, revisão, commits assinados, histórico linear
 - [x] SBOM CycloneDX + `attest-build-provenance`
 
-**Gate:** zizmor sem achados; branch protection ativa; CodeQL e gitleaks limpos. `zizmor --persona=pedantic` (offline e online) roda zero achados contra os cinco workflows — ver [ADR-009](#adr-009--gitleaks-semgrep-e-zizmor-via-cli-fixada-em-vez-de-actions-de-terceiros). O restante do gate (branch protection ativa; CodeQL/gitleaks limpos *em execução real*) depende de um repositório remoto no GitHub, que ainda não existe — ver [DT-010](#12-débito-técnico). **Fase permanece aberta até isso ser resolvido.**
+**Gate:** zizmor sem achados; branch protection ativa; CodeQL e gitleaks limpos. ✅ **concluída em 2026-07-27** — `zizmor --persona=pedantic` (offline e online) roda zero achados contra os workflows ([ADR-009](#adr-009--gitleaks-semgrep-e-zizmor-via-cli-fixada-em-vez-de-actions-de-terceiros)); repositório criado em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) ([DT-010](#12-débito-técnico) resolvido — ficou **público**, decisão do usuário, para viabilizar branch protection sem GitHub Pro); `main` protegida com os 10 checks obrigatórios, 1 revisão, commits assinados, histórico linear e regra válida também para administradores; CodeQL e gitleaks rodaram verdes no push inicial. Dois bugs só visíveis em execução real (Semgrep exigindo métricas com `--config auto`; `doc:check` comparando contra um commit que ainda não existia) corrigidos no [PR #4](https://github.com/OsvaldoBello/linktree-bondmann/pull/4) — ver ADR-011.
 
 ### F1 — Design system
 - [ ] `tokens.css` com o padrão cromático do manual
@@ -602,8 +602,10 @@ Primeira execução real do job `doc-drift` no GitHub Actions (push do commit in
 | DT-007 | ESLint preso na linha 9 e TypeScript na linha 5 | P3 | Bloqueado por `eslint-plugin-react` (API do ESLint 10) e `typescript-eslint` (peer `<6.1.0`). Revisar a cada bump do `eslint-config-next`. Ver [ADR-008](#adr-008--eslint-fixado-na-linha-9-e-typescript-na-linha-5) |
 | DT-008 | Navegadores do Playwright não instalados no ambiente local | P3 | `npm run test:e2e` exige `npx playwright install --with-deps` uma vez por máquina. O CI da F0.5 faz isso no job; localmente é passo manual. As specs da F0 são smoke — o E2E de verdade começa na F3 |
 | DT-009 | Placeholders de rota em `src/app/page.tsx` e `layout.tsx` | P1 | Existem só para o build da F0 ter rota real. São substituídos pelas entregas das F1 e F3 — não são design |
-| DT-010 | Repositório remoto no GitHub ainda não existe | P1 | `.github/workflows/*` e `dependabot.yml` estão prontos e validados localmente (`zizmor` limpo), mas nunca rodaram de verdade — não há remoto, não há branch protection, não há commits assinados. Bloqueia o fechamento do gate da F0.5. Decisão pendente com o usuário: conta pessoal ou organização (afeta o ADR-009 — gitleaks-action pago em organização), visibilidade (público/privado) e configuração de assinatura de commit |
+| ~~DT-010~~ | ~~Repositório remoto no GitHub ainda não existia~~ | — | **Resolvido em 2026-07-27.** Repositório criado como público em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) (branch protection em repo privado exige GitHub Pro — decisão do usuário foi tornar público) e `main` protegida |
 | DT-011 | Job `bench` em `ci.yml` é um placeholder | P2 | Roda `npm run bench --if-present`, que é um no-op enquanto o script não existir. Deixa de ser débito quando a F5/F10 instalar Lighthouse CI + size-limit e o script real for adicionado — nenhuma mudança no workflow será necessária nesse dia |
+| DT-012 | `required_approving_review_count: 1` em `main` sem um segundo mantenedor | P3 | Só o usuário tem acesso ao repositório hoje; GitHub não permite auto-aprovar o próprio PR nem o Dependabot aprova os próprios PRs, então **toda** PR — inclusive patch do Dependabot com auto-merge habilitado — espera uma aprovação manual do usuário antes de poder mergear. É o comportamento mais seguro possível para um mantenedor solo (nada mergeia sem alguém olhar), mas revisar se isso virar atrito real: baixar para 0 é a alternativa, documentando aqui o motivo |
+| DT-013 | Assinatura de commit (GPG/SSH) ainda não configurada na máquina do usuário | P1 | `required_signatures` está ativo em `main` por pedido do usuário mesmo sem assinatura configurada localmente. Squash-merge via UI do GitHub contorna isso (o commit de squash é assinado pelo próprio GitHub), mas qualquer push direto ou merge que preserve os commits originais será rejeitado até a assinatura existir. Configurar antes do primeiro merge que não seja squash |
 
 ---
 
@@ -614,6 +616,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-27 | `a7ff485` | fix: semgrep --config auto exige métricas; doc:check compara commit que não existe ainda |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
 | 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
 <!-- AUTO:changelog:end -->
