@@ -17,6 +17,17 @@ updates:
       prefix: 'chore(deps)'
     cooldown:
       default-days: 7
+    # ADR-008 / DT-007: ESLint 10 e TypeScript 6+ quebram o lint hoje
+    # (eslint-plugin-react do eslint-config-next usa API removida no ESLint 10;
+    # typescript-eslint@8 declara peer typescript <6.1.0). Revisar a cada bump
+    # do eslint-config-next.
+    ignore:
+      - dependency-name: 'eslint'
+        versions: ['>=10.0.0']
+      - dependency-name: '@eslint/js'
+        versions: ['>=10.0.0']
+      - dependency-name: 'typescript'
+        versions: ['>=6.0.0']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
