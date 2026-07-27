@@ -7,11 +7,16 @@
  *   - O `slug` do setor entra na URL pública e é PERMANENTE. Renomear quebra
  *     links já compartilhados — exige redirect e entrada no ADR.
  *
- * Na fase F2 este arquivo passa a ser validado por `src/lib/links-schema.ts`
- * (Zod) em tempo de build. Até lá, os tipos abaixo são a única garantia.
+ * Validado por `../lib/links-schema` (Zod) a cada import de `sectors` — um
+ * link malicioso ou com typo derruba o build antes de chegar a produção.
+ * Import relativo (não `@/lib/...`) de propósito: `scripts/validate-links.ts`
+ * executa este arquivo direto pelo Node, sem resolução de alias do bundler.
  *
- * Origem dos dados: "Links externos.docx" (Bondmann).
+ * Origem dos dados: "Links externos.docx" (Bondmann), mais os links do RH
+ * enviados diretamente pelo usuário em 2026-07-27.
  */
+
+import { assertValidSectors } from '../lib/links-schema.ts';
 
 export type SectorStatus = 'active' | 'coming-soon';
 
@@ -71,14 +76,12 @@ export const sectors: readonly Sector[] = [
         href: 'https://docs.google.com/spreadsheets/d/1JpBSINVkN9K8EBcgbzq3TWdb-fudAemlZaymV7-orMQ/edit?gid=1984125120#gid=1984125120',
       },
       {
-        // DT-002: mapeamento a confirmar — ver PROJECT.md §12.
         id: 'midia-feedback',
         title: 'Formulário de Feedback',
         description: 'Mídia Compartilhada',
         href: 'https://docs.google.com/forms/d/e/1FAIpQLSejna3J989_DUDwvXOnS1nOYe7PnSRS3CI_4FRIzcyaDy7qWA/viewform',
       },
       {
-        // DT-002: mapeamento a confirmar — ver PROJECT.md §12.
         id: 'midia-alteracao-campanha',
         title: 'Solicitação de Alteração de Campanha',
         description: 'Mídia Compartilhada',
@@ -221,9 +224,48 @@ export const sectors: readonly Sector[] = [
   {
     slug: 'rh',
     name: 'RH',
-    status: 'coming-soon',
-    tagline: 'Em breve',
-    links: [],
+    status: 'active',
+    tagline: 'Ajuda de custo, contratação e incentivo à educação',
+    links: [
+      {
+        id: 'ajuda-custo-solicitacao',
+        title: 'Solicitação de Ajuda de Custo',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UMU9FT0E0OEE2UFQzRExIMzUwMlA5UlNHVy4u',
+      },
+      {
+        id: 'ajuda-custo-prorrogacao',
+        title: 'Prorrogação de Ajuda de Custo',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UQU5SNENISFhXNVQzNzdSR1JKN042UDlEWC4u',
+      },
+      {
+        id: 'ajuda-custo-acompanhamento',
+        title: 'Acompanhamento de Ajuda de Custo',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1URE1FTUhPWlVaOUpBTUJBSU1LMzJVNlFRSS4u',
+      },
+      {
+        id: 'incentivo-educacao',
+        title: 'Requerimento Programa de Incentivo à Educação',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UOFJRTkVGUzNNRUtXQzZEVUlRU0FZT0NBMC4u',
+      },
+      {
+        id: 'fb030-alteracao-cargo',
+        title: 'Alteração de Cargo',
+        description: 'FB030',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UNEpZNTJESzZGWTlETDhSUUQ4TlpPUkFIMy4u',
+      },
+      {
+        id: 'fb031-solicitacao-contratacao',
+        title: 'Solicitação de Contratação',
+        description: 'FB031',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UNFBLR1k5RDIwT0tQRTdTOTNHVlAwMVBCVC4u',
+      },
+      {
+        id: 'fb032-encerramento-contrato',
+        title: 'Solicitação de Encerramento de Contrato',
+        description: 'FB032',
+        href: 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=yHI_dbastEqyd9z4ODo4ZhPzhx3jf2FFkZZPqcXjYU1UNjUzQkVMU1ZWN1o1UDNJTkRTTDM1NUNXMy4u',
+      },
+    ],
   },
 
   {
@@ -235,3 +277,5 @@ export const sectors: readonly Sector[] = [
     links: [],
   },
 ];
+
+assertValidSectors(sectors);

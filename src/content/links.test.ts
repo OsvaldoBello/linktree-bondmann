@@ -2,16 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { sectors } from './links';
 
 /**
- * Testes de sanidade do registry — F0.
+ * Testes de sanidade do registry.
  *
- * Aqui só se verifica a forma do que já existe. A validação de verdade (HTTPS
- * obrigatório, allowlist de domínios, denylist de encurtadores) é o schema Zod
- * da F2, e roda em build.
+ * A validação de verdade (HTTPS obrigatório, allowlist de domínios, denylist
+ * de encurtadores, slug/id únicos) é `src/lib/links-schema.ts` — roda a cada
+ * import de `sectors` (ver final de `links.ts`), inclusive aqui. Os testes
+ * abaixo cobrem invariantes de conteúdo que o schema não modela.
  */
 describe('registry de setores', () => {
-  it('bate com o inventário do PROJECT.md §6: 7 setores, 23 links', () => {
+  it('bate com o inventário do PROJECT.md §6: 7 setores, 30 links', () => {
     expect(sectors).toHaveLength(7);
-    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(23);
+    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(30);
   });
 
   it('tem slug único por setor', () => {

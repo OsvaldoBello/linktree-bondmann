@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-27 17:44 UTC | `e1bb558` | `feat/f1-design-system` |
+| 2026-07-27 17:56 UTC | `9c181ff` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -53,7 +53,7 @@ Um agregador de links próprio da Bondmann — no espírito do Linktree — com 
 <!-- AUTO:overview:start -->
 | Setores | Setores ativos | Links | Domínios distintos |
 |---|---|---|---|
-| 7 | 5 | 23 | 7 |
+| 7 | 6 | 30 | 8 |
 <!-- AUTO:overview:end -->
 
 ### Princípios de design do projeto
@@ -154,6 +154,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `typescript` | 5.9.3 | dev |
 | `typescript-eslint` | 8.65.0 | dev |
 | `vitest` | 4.1.10 | dev |
+| `zod` | 4.4.3 | dev |
 <!-- AUTO:stack:end -->
 
 ### Justificativa das escolhas
@@ -185,7 +186,7 @@ playwright.config.ts          ← E2E e axe, contra o build de produção
 postcss.config.mjs            ← Tailwind v4
 scripts/
   sync-master-doc.mjs         ← motor de auto-atualização deste documento
-  validate-links.mjs          ← valida o registry fora do build
+  validate-links.ts           ← valida o registry fora do build (Node 24 roda TS nativo)
 .claude/settings.json         ← hook Stop → doc:sync
 .github/
   workflows/ci.yml            ← verify + doc-drift + e2e + bench (placeholder até F5/F10) + audit
@@ -234,7 +235,7 @@ public/brand/                  ← logo.svg, favicons
 Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fase não fecha sem ele.
 
 <!-- AUTO:progress:start -->
-`████████████░░░░░░░░` **58%** — 19 de 33 itens concluídos
+`█████████████░░░░░░░` **67%** — 22 de 33 itens concluídos
 <!-- AUTO:progress:end -->
 
 ### F0 — Fundação
@@ -268,12 +269,12 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes. ✅ **concluída em 2026-07-27** — `src/lib/contrast.ts` reproduz a fórmula WCAG 2.2 e trava os pares do §2 (navy/branco, branco/navy e navy/verde passam AA; verde/branco reprova, ≈2.0:1, pinado por teste); `src/components/` (Logo, PatternBackground, PageShell, SectorCard, LinkButton) com 100% de cobertura, acima do piso de 90%. `<Logo>` não expõe `className`/`style` — safe-area e tamanho mínimo do manual não são sobrescrevíveis por prop, só por union fechado (`color`/`size`) com fallback seguro para valor hostil. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
 
 ### F2 — Registry de links
-- [x] `src/content/links.ts` com os 7 setores e 23 links
-- [ ] `links-schema.ts`: HTTPS obrigatório, allowlist de domínios, denylist de encurtadores, slug único
-- [ ] `npm run validate:links`
-- [ ] Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* ([DT-002](#12-débito-técnico))
+- [x] `src/content/links.ts` com os 7 setores e 30 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27)
+- [x] `links-schema.ts`: HTTPS obrigatório, allowlist de domínios, denylist de encurtadores, slug único
+- [x] `npm run validate:links`
+- [x] Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* ([DT-002](#12-débito-técnico))
 
-**Gate:** build falha com URL `http://`, domínio fora da allowlist ou slug duplicado.
+**Gate:** build falha com URL `http://`, domínio fora da allowlist ou slug duplicado. ✅ **concluída em 2026-07-27** — `src/lib/links-schema.ts` (Zod) valida a cada import de `sectors` (build, testes e `npm run validate:links` standalone), travando protocolo, allowlist, denylist e slug/id únicos; 10 testes cobrindo cada regra de rejeição. Setores ativos: 6 de 7 (só Controladoria segue "em breve" — [DT-001](#12-débito-técnico)). Novo domínio `forms.cloud.microsoft` (formulários RH) entrou na allowlist.
 
 ### F3 — Home de setores
 - [ ] Grade responsiva mobile-first com os 7 setores
@@ -310,7 +311,7 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 23 links.** Fonte original: `Links externos.docx`. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 30 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 ### Marketing — 7 links
 | Título | Destino |
@@ -355,8 +356,16 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 |---|---|
 | AlquimIA | `linktr.ee/gptsbondmann` |
 
-### RH — *Em breve*
-Sem links definidos.
+### RH — 7 links
+| Título | Destino |
+|---|---|
+| Solicitação de Ajuda de Custo | Microsoft Forms |
+| Prorrogação de Ajuda de Custo | Microsoft Forms |
+| Acompanhamento de Ajuda de Custo | Microsoft Forms |
+| Requerimento Programa de Incentivo à Educação | Microsoft Forms |
+| FB030 · Alteração de Cargo | Microsoft Forms |
+| FB031 · Solicitação de Contratação | Microsoft Forms |
+| FB032 · Solicitação de Encerramento de Contrato | Microsoft Forms |
 
 ### Controladoria — *Em breve*
 Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)).
@@ -397,9 +406,9 @@ Todo `<LinkButton>` renderiza `target="_blank" rel="noopener noreferrer nofollow
 `links-schema.ts` exige:
 
 - Protocolo `https://` — `http://` é rejeitado
-- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `linktr.ee`
+- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `linktr.ee`, `forms.cloud.microsoft` (Microsoft Forms do RH, F2)
 - Hostname fora da **denylist de encurtadores**: `bit.ly`, `tinyurl.com`, `t.co`, `goo.gl`, `ow.ly`, `is.gd`
-- Slug único por setor, título não vazio
+- Slug de setor único, id único dentro do setor, título não vazio
 
 Roda em build. **Um link malicioso ou com typo não chega a produção.**
 
@@ -601,7 +610,7 @@ O tamanho mínimo (`--logo-min-height: 20mm`), por outro lado, vem direto do man
 | ID | Item | Prioridade | Contexto |
 |---|---|---|---|
 | DT-001 | Link do app OnFly para a Controladoria | P2 | Setor permanece "Em breve" até obter |
-| DT-002 | Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* | P1 | Mapeados pela ordem de envio; as URLs `viewform` são indistinguíveis. Verificar abrindo ambos na F2 |
+| ~~DT-002~~ | ~~Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha*~~ | — | **Resolvido em 2026-07-27.** Os dois formulários foram abertos na F2: `1FAIpQLSejna3J9...` é "Feedback BD - Campanhas Regionais Conversão" (confirma `midia-feedback`); `1FAIpQLScTwSUw...` é "BD - Campanhas Regionais - Novos Produtos ou Cidades" (confirma `midia-alteracao-campanha`). O mapeamento por ordem de envio já estava correto |
 | DT-003 | Licença webfont da família Info | P3 | Substituiria a Fira Sans, alinhando 100% ao manual |
 | DT-004 | Estabilidade dos links SharePoint com token `?e=…` | P2 | Podem expirar; mitigado pelo link health check da F7 |
 | DT-005 | Domínio definitivo na Vercel | P1 | Necessário antes da F6 |
@@ -624,6 +633,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
 | 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |
 | 2026-07-27 | `a7ff485` | fix: semgrep --config auto exige métricas; doc:check compara commit que não existe ainda |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
