@@ -320,12 +320,23 @@ function main() {
   }
 
   if (CHECK_ONLY) {
-    // A data de sincronização muda a cada execução; compará-la faria o check
-    // falhar sempre. Ignoramos apenas essa linha.
-    const stripStamp = (text) =>
-      text.replace(/\| \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC \|/g, '| <stamp> |');
+    // `updated` e `changelog` descrevem o commit/branch/histórico no momento
+    // do sync — e por definição não podem incluir o próprio commit que vai
+    // carregar essa atualização (o hash dele só existe depois de commitado).
+    // Rodar `doc:sync` antes de commitar sempre deixa essas duas regiões um
+    // commit "atrás" de si mesmas; comparação estrita nelas falharia sempre
+    // para o commit que roda o sync. As demais regiões (overview, stack,
+    // progress, tests, bench) não têm esse problema — não dependem do próprio
+    // hash — e continuam comparadas ao pé da letra.
+    const maskRegion = (text, name) => {
+      const start = text.indexOf(`<!-- AUTO:${name}:start -->`);
+      const end = text.indexOf(`<!-- AUTO:${name}:end -->`);
+      if (start === -1 || end === -1) return text;
+      return text.slice(0, start) + text.slice(end);
+    };
+    const stripVolatile = (text) => maskRegion(maskRegion(text, 'updated'), 'changelog');
 
-    if (stripStamp(doc) !== stripStamp(original)) {
+    if (stripVolatile(doc) !== stripVolatile(original)) {
       console.error(
         '✖ PROJECT.md está defasado.\n' +
           '  Rode `npm run doc:sync` e inclua o resultado no commit.',
