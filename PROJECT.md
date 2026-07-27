@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-27 16:57 UTC | `—` | `—` |
+| 2026-07-27 17:13 UTC | `688e80b` | `main` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -580,6 +580,13 @@ Validado localmente: `zizmor --persona=pedantic` (offline e online, com token do
 
 Testado localmente (cópia isolada do projeto): `npm ci --ignore-scripts` seguido de `tsc --noEmit`, `eslint .`, `vitest run` e `next build` — todos passam sem nenhuma etapa adicional de `npm rebuild`. O motivo é estrutural: nenhum pacote deste projeto precisa de um binário nativo baixado via `postinstall` para o caminho que o CI exercita. `sharp` é `optionalDependency` do Next (usado só por `next/image`, que este projeto não usa — nenhum import em `src/`); os binários específicos de plataforma do `esbuild`/SWC chegam via `optionalDependencies` comuns, resolvidos na própria árvore do `npm ci`, não por script de lifecycle. Se algum pacote futuro passar a exigir de fato um `postinstall`, a falha aparece imediata e localizada no job `verify` — decisão nesse momento é adicionar um `npm rebuild <pacote> --ignore-scripts=false` explícito e documentado aqui, nunca remover o `--ignore-scripts` geral.
 
+### ADR-011 — `doc:check` ignora `updated` e `changelog` na comparação
+**Data:** 2026-07-27 · **Status:** aceito
+
+Primeira execução real do job `doc-drift` no GitHub Actions (push do commit inicial) revelou um paradoxo estrutural: as regiões `AUTO:updated` (commit/branch) e `AUTO:changelog` (histórico via `git log`) descrevem o estado do repositório **no momento do sync** — que roda antes de commitar. O commit que carrega essa atualização, por definição, ainda não existe quando o sync roda, então essas duas regiões nunca conseguem descrever a si mesmas; `git log HEAD` no `doc-drift`, rodando já sobre esse commit, sempre inclui uma entrada (a própria dele) que a versão salva no arquivo não podia ter previsto. Comparação byte a byte nessas duas regiões falharia em **todo** commit que tocasse o `PROJECT.md`, inclusive quando nada mais estivesse defasado.
+
+`scripts/sync-master-doc.mjs` no modo `--check` agora mascara essas duas regiões antes de comparar (função `stripVolatile`), mantendo comparação estrita em `overview`, `stack`, `progress`, `tests` e `bench` — nenhuma delas depende do próprio hash de commit, então continuam sendo sinal real de documentação desatualizada. Validado localmente rodando `doc:sync` seguido de `doc:check` no mesmo estado que o CI vai ver.
+
 ---
 
 ## 12. Débito técnico
@@ -603,7 +610,12 @@ Testado localmente (cópia isolada do projeto): `npm ci --ignore-scripts` seguid
 ## 13. Changelog
 
 <!-- AUTO:changelog:start -->
-Nenhum commit registrado ainda.
+Histórico completo:
+
+| Data | Commit | Descrição |
+|---|---|---|
+| 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
+| 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
 <!-- AUTO:changelog:end -->
 
 ---
