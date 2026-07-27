@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-27 17:18 UTC | `a7ff485` | `fix/ci-semgrep-and-doc-check` |
+| 2026-07-27 17:44 UTC | `e1bb558` | `feat/f1-design-system` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -99,8 +99,8 @@ Garantido por teste automatizado em `src/lib/contrast.test.ts` — qualquer par 
 
 Regras do manual traduzidas em código:
 
-- **Área de não-interferência:** equivale à altura de **duas letras "B" maiúsculas** de "BONDMANN". Implementada como o token `--logo-safe-area`, aplicada como padding obrigatório pelo componente `<Logo>`.
-- **Redução mínima:** 25 mm (vertical) / 20 mm (horizontal) com byline; 20 / 15 mm sem byline. Traduzida para um `min-width` em px no componente, que não pode ser sobrescrito por prop.
+- **Área de não-interferência:** equivale à altura de **duas letras "B" maiúsculas** de "BONDMANN" no manual. O `<Logo>` renderiza só o símbolo (sem wordmark), então o token `--logo-safe-area` (`0.3em`, padding obrigatório, não sobrescrevível por prop) é uma aproximação proporcional, não a medida exata do manual — ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
+- **Redução mínima:** 25 mm (vertical) / 20 mm (horizontal) com byline; 20 / 15 mm sem byline. Traduzida para `--logo-min-height: 20mm` (unidade `mm` do CSS, conversão exata para px) no componente; a largura segue via `aspect-ratio`, sempre acima do piso de 15mm. Não sobrescrevível por prop.
 - **Textura de fundo:** o próprio símbolo, ampliado e em baixa opacidade, via `<PatternBackground>` — sempre `aria-hidden`, nunca em tamanho que compita com o logo legível.
 
 ### Tipografia
@@ -234,7 +234,7 @@ public/brand/                  ← logo.svg, favicons
 Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fase não fecha sem ele.
 
 <!-- AUTO:progress:start -->
-`████████░░░░░░░░░░░░` **42%** — 14 de 33 itens concluídos
+`████████████░░░░░░░░` **58%** — 19 de 33 itens concluídos
 <!-- AUTO:progress:end -->
 
 ### F0 — Fundação
@@ -259,13 +259,13 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** zizmor sem achados; branch protection ativa; CodeQL e gitleaks limpos. ✅ **concluída em 2026-07-27** — `zizmor --persona=pedantic` (offline e online) roda zero achados contra os workflows ([ADR-009](#adr-009--gitleaks-semgrep-e-zizmor-via-cli-fixada-em-vez-de-actions-de-terceiros)); repositório criado em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) ([DT-010](#12-débito-técnico) resolvido — ficou **público**, decisão do usuário, para viabilizar branch protection sem GitHub Pro); `main` protegida com os 10 checks obrigatórios, 1 revisão, commits assinados, histórico linear e regra válida também para administradores; CodeQL e gitleaks rodaram verdes no push inicial. Dois bugs só visíveis em execução real (Semgrep exigindo métricas com `--config auto`; `doc:check` comparando contra um commit que ainda não existia) corrigidos no [PR #4](https://github.com/OsvaldoBello/linktree-bondmann/pull/4) — ver ADR-011.
 
 ### F1 — Design system
-- [ ] `tokens.css` com o padrão cromático do manual
-- [ ] Fira Sans via `next/font` (self-hosted)
-- [ ] `<Logo>` com safe-area e tamanho mínimo do manual
-- [ ] `<PatternBackground>`, `<PageShell>`, `<SectorCard>`, `<LinkButton>`
-- [ ] Teste automatizado de contraste WCAG AA
+- [x] `tokens.css` com o padrão cromático do manual
+- [x] Fira Sans via `next/font` (self-hosted)
+- [x] `<Logo>` com safe-area e tamanho mínimo do manual
+- [x] `<PatternBackground>`, `<PageShell>`, `<SectorCard>`, `<LinkButton>`
+- [x] Teste automatizado de contraste WCAG AA
 
-**Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes.
+**Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes. ✅ **concluída em 2026-07-27** — `src/lib/contrast.ts` reproduz a fórmula WCAG 2.2 e trava os pares do §2 (navy/branco, branco/navy e navy/verde passam AA; verde/branco reprova, ≈2.0:1, pinado por teste); `src/components/` (Logo, PatternBackground, PageShell, SectorCard, LinkButton) com 100% de cobertura, acima do piso de 90%. `<Logo>` não expõe `className`/`style` — safe-area e tamanho mínimo do manual não são sobrescrevíveis por prop, só por union fechado (`color`/`size`) com fallback seguro para valor hostil. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
 
 ### F2 — Registry de links
 - [x] `src/content/links.ts` com os 7 setores e 23 links
@@ -587,6 +587,13 @@ Primeira execução real do job `doc-drift` no GitHub Actions (push do commit in
 
 `scripts/sync-master-doc.mjs` no modo `--check` agora mascara essas duas regiões antes de comparar (função `stripVolatile`), mantendo comparação estrita em `overview`, `stack`, `progress`, `tests` e `bench` — nenhuma delas depende do próprio hash de commit, então continuam sendo sinal real de documentação desatualizada. Validado localmente rodando `doc:sync` seguido de `doc:check` no mesmo estado que o CI vai ver.
 
+### ADR-012 — Safe-area do logo como fração proporcional, em vez de medida do manual
+**Data:** 2026-07-27 · **Status:** aceito
+
+O manual define a área de não-interferência do símbolo como "a altura de duas letras 'B' maiúsculas de BONDMANN" — uma medida derivada do wordmark. O componente `<Logo>` (F1) renderiza só o símbolo de seis anéis, sem wordmark, então não existe uma cap-height própria para medir essa referência. Sem acesso ao PDF do manual (44 páginas, não disponível neste ambiente) para extrair a proporção exata entre a altura da letra "B" e o símbolo, adotamos `--logo-safe-area: 0.3em` — um `padding` proporcional ao tamanho renderizado do logo (via `font-size` do wrapper), não um valor fixo em px, para preservar a propriedade central de toda regra de clear-space: escalar com o tamanho do logo. `0.3em` é uma aproximação de engenharia, não uma medida extraída do manual. Ver [DT-014](#12-débito-técnico).
+
+O tamanho mínimo (`--logo-min-height: 20mm`), por outro lado, vem direto do manual (redução mínima sem byline) e usa a unidade `mm` do CSS — que tem conversão exata para px (1in = 25.4mm) — em vez de um valor pré-convertido à mão.
+
 ---
 
 ## 12. Débito técnico
@@ -601,11 +608,12 @@ Primeira execução real do job `doc-drift` no GitHub Actions (push do commit in
 | DT-006 | `brace-expansion` vulnerável na árvore de dev | P2 | DoS por expansão ilimitada, corrigido só na `5.0.8`, cujo export quebra o `minimatch` do ESLint. Chega via `eslint-config-next → eslint-plugin-import/jsx-a11y/react`. É dependência de lint: o padrão de glob vem da nossa própria config, não de entrada hostil, e nada disso entra no bundle. Remover o `--omit=dev` do passo bloqueante assim que o `eslint-config-next` subir para `minimatch@10+`. Ver [ADR-007](#adr-007--overrides-de-postcss-e-sharp-política-de-npm-audit) |
 | DT-007 | ESLint preso na linha 9 e TypeScript na linha 5 | P3 | Bloqueado por `eslint-plugin-react` (API do ESLint 10) e `typescript-eslint` (peer `<6.1.0`). Revisar a cada bump do `eslint-config-next`. Ver [ADR-008](#adr-008--eslint-fixado-na-linha-9-e-typescript-na-linha-5) |
 | DT-008 | Navegadores do Playwright não instalados no ambiente local | P3 | `npm run test:e2e` exige `npx playwright install --with-deps` uma vez por máquina. O CI da F0.5 faz isso no job; localmente é passo manual. As specs da F0 são smoke — o E2E de verdade começa na F3 |
-| DT-009 | Placeholders de rota em `src/app/page.tsx` e `layout.tsx` | P1 | Existem só para o build da F0 ter rota real. São substituídos pelas entregas das F1 e F3 — não são design |
+| DT-009 | Placeholder de rota em `src/app/page.tsx` | P1 | Existe só para o build da F0 ter rota real — lista simples de setores, sem `<PageShell>`/`<SectorCard>`. `layout.tsx` já recebeu a entrega real da F1 (Fira Sans, tokens). `page.tsx` é substituído pela grade da F3 |
 | ~~DT-010~~ | ~~Repositório remoto no GitHub ainda não existia~~ | — | **Resolvido em 2026-07-27.** Repositório criado como público em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) (branch protection em repo privado exige GitHub Pro — decisão do usuário foi tornar público) e `main` protegida |
 | DT-011 | Job `bench` em `ci.yml` é um placeholder | P2 | Roda `npm run bench --if-present`, que é um no-op enquanto o script não existir. Deixa de ser débito quando a F5/F10 instalar Lighthouse CI + size-limit e o script real for adicionado — nenhuma mudança no workflow será necessária nesse dia |
 | DT-012 | `required_approving_review_count: 1` em `main` sem um segundo mantenedor | P3 | Só o usuário tem acesso ao repositório hoje; GitHub não permite auto-aprovar o próprio PR nem o Dependabot aprova os próprios PRs, então **toda** PR — inclusive patch do Dependabot com auto-merge habilitado — espera uma aprovação manual do usuário antes de poder mergear. É o comportamento mais seguro possível para um mantenedor solo (nada mergeia sem alguém olhar), mas revisar se isso virar atrito real: baixar para 0 é a alternativa, documentando aqui o motivo |
 | DT-013 | Assinatura de commit (GPG/SSH) ainda não configurada na máquina do usuário | P1 | `required_signatures` está ativo em `main` por pedido do usuário mesmo sem assinatura configurada localmente. Squash-merge via UI do GitHub contorna isso (o commit de squash é assinado pelo próprio GitHub), mas qualquer push direto ou merge que preserve os commits originais será rejeitado até a assinatura existir. Configurar antes do primeiro merge que não seja squash |
+| DT-014 | `--logo-safe-area: 0.3em` é aproximação de engenharia, não medida do manual | P2 | O manual mede a área de não-interferência pela altura de duas letras "B" do wordmark, que o `<Logo>` não renderiza (só o símbolo). Sem o PDF do manual disponível neste ambiente para extrair a proporção real, `0.3em` foi escolhido para preservar a propriedade de escalar com o tamanho do logo. Recalibrar contra o manual original quando o PDF estiver disponível. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) |
 
 ---
 
@@ -616,6 +624,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |
 | 2026-07-27 | `a7ff485` | fix: semgrep --config auto exige métricas; doc:check compara commit que não existe ainda |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
 | 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
