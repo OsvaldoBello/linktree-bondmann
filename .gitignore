@@ -1,0 +1,34 @@
+# dependências
+node_modules/
+.pnp
+.pnp.*
+
+# build
+.next/
+out/
+build/
+next-env.d.ts
+
+# testes e relatórios
+coverage/
+.lighthouseci/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# ambiente — nenhum secret deve existir neste projeto (PROJECT.md §8),
+# mas o ignore fica como rede de segurança
+.env
+.env.*
+!.env.example
+
+# ferramentas
+.vercel/
+.eslintcache
+*.tsbuildinfo
+
+# sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini

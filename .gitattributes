@@ -1,0 +1,11 @@
+# Normaliza para LF no repositório, independente do SO de quem clona.
+* text=auto eol=lf
+
+# O .bat precisa de CRLF para o cmd.exe do Windows.
+*.bat text eol=crlf
+
+*.svg text eol=lf
+*.png binary
+*.ico binary
+*.woff binary
+*.woff2 binary

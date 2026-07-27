@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+/**
+ * Os tokens do manual de marca (--bond-navy, --bond-green, --logo-safe-area)
+ * entram na F1, em `src/styles/tokens.css`. Este arquivo carrega apenas o
+ * Tailwind e o reset de base.
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+}

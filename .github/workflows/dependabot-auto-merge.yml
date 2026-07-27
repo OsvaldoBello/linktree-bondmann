@@ -1,0 +1,39 @@
+name: Dependabot auto-merge
+
+# ADR-007: auto-merge apenas para atualizações de patch, e apenas depois que os
+# checks obrigatórios (verify, doc-drift, e2e, bench, codeql — PROJECT.md §8)
+# ficarem verdes. Este job só HABILITA o auto-merge do GitHub; quem de fato
+# mergeia é a branch protection, checks obrigatórios inclusos. PRs do
+# Dependabot não vêm de fork, então `pull_request` já roda com o token normal
+# — nada de `pull_request_target` (proibido pela §8).
+on:
+  pull_request:
+
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  auto-merge:
+    name: auto-merge
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # necessário para `gh pr merge` habilitar o auto-merge do PR
+      pull-requests: write # idem — sem isto o merge automático não pode ser ativado
+    steps:
+      - name: Metadados do Dependabot
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Habilitar auto-merge (somente patch)
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"

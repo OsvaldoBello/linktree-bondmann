@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
+next-env.d.ts
+
+# Gerado parcialmente por script; o Prettier reformataria as tabelas AUTO e
+# faria o `doc-drift` brigar com o `format:check`.
+PROJECT.md
+
+# O `next build` reescreve partes deste arquivo (jsx, include de tipos) num
+# formato próprio. Deixar o Prettier disputá-lo quebraria o `verify` a cada build.
+tsconfig.json

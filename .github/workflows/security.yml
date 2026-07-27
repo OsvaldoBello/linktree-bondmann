@@ -1,0 +1,124 @@
+name: Security
+
+# PROJECT.md §8. gitleaks, Semgrep e zizmor rodam via CLI oficial instalado e
+# fixado por versão exata (não via Action de terceiros) — ver ADR-009: menos
+# uma peça de terceiro na cadeia de suprimentos do próprio pipeline. CodeQL é
+# a exceção porque é a Action oficial do GitHub, sem CLI equivalente prático.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1' # segunda-feira 06:00 UTC — captura CVEs novos mesmo sem push
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write # exigido para publicar os resultados do CodeQL na aba Security
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          languages: javascript-typescript
+      - name: Analisar
+        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          category: /language:javascript-typescript
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      GITLEAKS_VERSION: '8.30.1'
+    steps:
+      - name: Checkout (histórico completo — PROJECT.md §8)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Instalar gitleaks (binário oficial, checksum verificado)
+        run: |
+          set -euo pipefail
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -sSLO "${base}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSLO "${base}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          sha256sum --ignore-missing -c "gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+      - name: gitleaks detect
+        run: gitleaks detect --source . --redact --no-banner --exit-code 1
+
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Instalar Semgrep (versão fixada)
+        run: pip install --no-cache-dir "semgrep==1.171.0"
+      - name: Semgrep — regras React/Next (dangerouslySetInnerHTML, target=_blank sem rel, redirect aberto)
+        run: semgrep scan --config auto --error --metrics=off
+
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Instalar zizmor (versão fixada)
+        run: pip install --no-cache-dir "zizmor==1.28.0"
+      - name: zizmor — lint dos próprios workflows
+        run: zizmor --persona=regular .
+
+  dependency-review:
+    name: dependency-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
