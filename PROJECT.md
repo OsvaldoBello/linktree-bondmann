@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 12:44 UTC | `5ad331b` | `feat/f2-registry-links` |
+| 2026-07-28 14:02 UTC | `a5c3a77` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -316,7 +316,7 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 
 **Gate:** produção no ar, os 30 links conferidos manualmente.
 
-Primeiro passo desta fase, e pré-requisito de tudo o mais: **mergear em `main`**. `origin/main` ainda está no commit da F0.5, então nenhum deploy de produção contém a F1–F5 — ver [DT-017](#12-débito-técnico).
+O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-bondmann.vercel.app` está no ar — mas servindo `feat/f2-registry-links`, não `main`. Fechar esta fase é mergear o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5) e devolver a *Production Branch* para `main`, nessa ordem — ver [DT-017](#12-débito-técnico).
 
 ### F7 — Operação
 - [ ] Link health check semanal (HEAD nas URLs, abre issue em 4xx/5xx)
@@ -715,7 +715,7 @@ O favicon anterior era o símbolo em verde sólido, sem fundo, no viewBox origin
 
 **Fallback `.ico`.** Todo navegador atual lê favicon SVG, mas Safari anterior ao 16.4, atalhos do Windows e ferramentas que pedem `/favicon.ico` direto (sem ler o HTML) não. `scripts/generate-favicon.mjs` gera `public/favicon.ico` (PNG embutido, 16/32/48 px) a partir da **mesma geometria** do SVG — placa de cantos arredondados e seis coroas circulares em arranjo hexagonal, tudo analítico, com supersampling 4×4 para antialiasing. Sem dependência nova: o PNG sai do `zlib` do próprio Node e o container ICO são 22 bytes de cabeçalho. O arquivo é **commitado**; o build não roda o script. Rodar de novo só se `icon.svg` mudar. O `<link rel="icon">` continua vindo da convenção do App Router (`/icon.svg?<hash>`) — o hash é cache-buster, e trocá-lo por um `metadata.icons` manual perderia exatamente isso, que é o que faz o navegador largar o favicon velho.
 
-Não corrige, por si só, o que o usuário está vendo: o favicon (e todo o resto da F1–F5) só existe nesta branch. Ver [DT-017](#12-débito-técnico).
+Confirmado em produção (`links-bondmann.vercel.app`) em 2026-07-28: `/icon.svg` serve o canvas 512×512 com a placa navy e `/favicon.ico` responde 200 em `image/vnd.microsoft.icon`. Vale registrar por que a correção anterior (`5ad331b`, símbolo verde sem fundo) não resolveu apesar de estar no ar: o ícone carregava, mas era invisível no tamanho em que a guia o desenha — o diagnóstico inicial de "não está no ar" estava errado, e o que estava errado era a arte. Ver [DT-017](#12-débito-técnico).
 
 ---
 
@@ -739,7 +739,7 @@ Não corrige, por si só, o que o usuário está vendo: o favicon (e todo o rest
 | DT-014 | `--logo-safe-area: 0.3em` é aproximação de engenharia, não medida do manual | P2 | O manual mede a área de não-interferência pela altura de duas letras "B" do wordmark, que o `<Logo>` não renderiza (só o símbolo). Sem o PDF do manual disponível neste ambiente para extrair a proporção real, `0.3em` foi escolhido para preservar a propriedade de escalar com o tamanho do logo. Recalibrar contra o manual original quando o PDF estiver disponível. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) |
 | DT-015 | Lighthouse CI não validado localmente — só `size-limit` | P1 | `npx lhci autorun` falha neste ambiente com `spawn UNKNOWN` ao tentar abrir o Chromium do Playwright (mesmo binário, mesmo comando, falha idêntica no Git Bash e no PowerShell) — sandbox de execução deste ambiente parece bloquear o spawn direto de um processo de navegador fora da ferramenta de browser já provisionada. `size-limit` roda e passa normalmente (não depende de navegador). `.lighthouserc.json` e os limiares do §10 estão configurados e corretos por inspeção, mas nunca produziram um relatório real — a primeira validação de verdade é o job `bench` no GitHub Actions, mesmo padrão do [ADR-011](#adr-011--doccheck-ignora-updated-e-changelog-na-comparação) (bugs só visíveis na primeira execução real). Como `bench` é check obrigatório em `main` (§8), o primeiro PR que carregar essa mudança pode falhar por limiar mal calibrado (não por erro de configuração) — acompanhar essa execução e ajustar `.lighthouserc.json` se necessário antes de exigir o check |
 | DT-016 | Gate da F5 depende de um deploy que ainda não existe | P1 | `securityheaders.com` só audita uma URL pública — não há uma até a F6 terminar. O gate da F5 foi fechado com essa checagem pendente; roda-la contra o domínio de produção assim que a F6 concluir e registrar o resultado (nota ou achado) na entrada da F5 |
-| DT-017 | **`main` está parada na F0.5 — nada da F1–F5 está no ar** | P0 | `origin/main` aponta para `688e80b` ("ci: bloquear Dependabot…"), sete commits atrás desta branch. Tudo que veio depois — design system, registry, home, telas de setor, hardening e o favicon — vive só em `feat/f2-registry-links`. Qualquer deploy de produção da Vercel (que segue `main`) serve o placeholder da F0: sem favicon, sem setores, sem redesenho. É a explicação para "o logo da Bondmann não aparece na guia" continuar valendo depois de cada correção de favicon. **Nenhum ajuste de código resolve isso**; é preciso abrir o PR desta branch para `main`, passar pelos checks obrigatórios do §8 e mergear — e, se o que o usuário está olhando for um preview de PR, forçar recarga sem cache, porque favicon é dos ativos mais agressivamente cacheados pelo navegador. Ver [ADR-020](#adr-020--favicon-símbolo-verde-sobre-placa-navy-mais-fallback-ico-gerado) |
+| DT-017 | **Produção deploya de uma branch de feature, não de `main`** | P1 | O projeto na Vercel é `osvaldo-s-projects3/links-bondmann`, e `links-bondmann.vercel.app` serve `feat/f2-registry-links` — não `main`, que segue no commit da F0.5 (`688e80b`), sete commits atrás. Conferido por resposta HTTP em 2026-07-28: produção já servia o build desta branch, com o favicon novo e a home redesenhada. Consequência prática: o §8 promete que "todo deploy de produção é rastreável a um commit assinado, revisado, com CI verde", e hoje isso não se sustenta — a branch de produção não é protegida, não exige revisão e nunca tinha passado pelo CI (o primeiro run foi o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5)). Corrigir apontando a *Production Branch* da Vercel de volta para `main` **depois** que o PR #5 mergear, para não deixar produção sem conteúdo no intervalo |
 
 ---
 
@@ -750,6 +750,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `a5c3a77` | ajustes de home: texto, ordem alfabética, fundo fixo e favicon legível |
 | 2026-07-28 | `5ad331b` | favicon verde + unsafe-eval na CSP só em desenvolvimento |
 | 2026-07-28 | `cda9711` | F5: hardening da aplicação e do pipeline |
 | 2026-07-28 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
