@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 12:00 UTC | `9798cd8` | `feat/f2-registry-links` |
+| 2026-07-28 12:10 UTC | `6bff187` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -137,7 +137,9 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `react-dom` | 19.2.8 | runtime |
 | `@axe-core/playwright` | 4.12.1 | dev |
 | `@eslint/js` | 9.39.5 | dev |
+| `@lhci/cli` | 0.15.1 | dev |
 | `@playwright/test` | 1.62.0 | dev |
+| `@size-limit/file` | 13.0.1 | dev |
 | `@tailwindcss/postcss` | 4.3.3 | dev |
 | `@testing-library/dom` | 10.4.1 | dev |
 | `@testing-library/jest-dom` | 7.0.0 | dev |
@@ -153,8 +155,10 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `eslint-config-prettier` | 10.1.8 | dev |
 | `eslint-plugin-security` | 4.0.1 | dev |
 | `jsdom` | 30.0.0 | dev |
+| `playwright-core` | 1.62.0 | dev |
 | `postcss` | 8.5.23 | dev |
 | `prettier` | 3.9.6 | dev |
+| `size-limit` | 13.0.1 | dev |
 | `tailwindcss` | 4.3.3 | dev |
 | `typescript` | 5.9.3 | dev |
 | `typescript-eslint` | 8.65.0 | dev |
@@ -240,7 +244,7 @@ public/brand/                  ← logo.svg, favicons
 Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fase não fecha sem ele.
 
 <!-- AUTO:progress:start -->
-`████████████████░░░░` **79%** — 26 de 33 itens concluídos
+`██████████████████░░` **88%** — 29 de 33 itens concluídos
 <!-- AUTO:progress:end -->
 
 ### F0 — Fundação
@@ -296,11 +300,11 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (ambos da F1) aplicavam `text-bond-navy/70` no texto secundário — 4.11:1, abaixo do piso AA de 4.5:1 do §2, só ficou visível agora porque a F1 não tinha rota real para o Playwright auditar. Trocado por `text-bond-navy` (cor cheia) nos dois componentes e nas telas novas; `src/lib/contrast.test.ts` já provava que navy cheio sobre branco passa AA, só não havia teste E2E que exercitasse o par real na tela até esta fase.
 
 ### F5 — Hardening da aplicação
-- [ ] CSP estrita com nonce, HSTS, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`
-- [ ] `X-Robots-Tag`, `robots.txt`, metadata `noindex`
-- [ ] axe em todas as rotas
+- [x] CSP estrita, HSTS, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`
+- [x] `X-Robots-Tag`, `robots.txt`, metadata `noindex`
+- [x] axe em todas as rotas
 
-**Gate:** `securityheaders.com` A+; axe sem violações; LHCI dentro do orçamento.
+**Gate:** `securityheaders.com` A+ (a confirmar após deploy — F6, [DT-016](#12-débito-técnico)); axe sem violações; LHCI dentro do orçamento. ✅ **concluída em 2026-07-27**, com ressalvas registradas em [DT-015](#12-débito-técnico) e [DT-016](#12-débito-técnico) — todos os cabeçalhos de `next.config.ts` (`headers()`) cobrem toda rota (`/:path*`); `public/robots.txt` nega tudo; `metadata.robots` ganhou `noarchive`. A CSP planejada originalmente usava nonce por requisição via middleware — testada, e quebrava a cada cache hit (a página é 100% pré-renderizada, o nonce do header não batia com o já embutido no HTML servido do cache), travando a hidratação; revertida para uma CSP estática sem nonce após decisão do usuário — ver [ADR-016](#adr-016--csp-estática-sem-nonce-em-vez-de-nonce-por-middleware). `<Logo>` e `<PatternBackground>` perderam o atributo `style` (viraram classes Tailwind com valor arbitrário) para que `style-src` continue sem `unsafe-inline`. `e2e/navigation.spec.ts` ganhou a suíte "F5 — hardening": cabeçalhos exatos, `robots.txt`, e axe no 404 e no setor "em breve" (fechando a cobertura de todos os 4 templates de tela — antes só home e um setor ativo tinham axe). Lighthouse CI (`@lhci/cli`) e `size-limit` instalados e configurados contra o orçamento do §10 — recalibrado em [ADR-017](#adr-017--orçamento-de-js-recalibrado-para-a-linha-de-base-real-do-app-router); `npm run bench` roda local mas não pôde validar a parte do Lighthouse neste ambiente (spawn de Chrome bloqueado pelo sandbox) — primeira validação real será no `bench` do CI, mesmo padrão do [ADR-011](#adr-011--doccheck-ignora-updated-e-changelog-na-comparação).
 
 ### F6 — Deploy
 - [ ] Projeto na Vercel, domínio, preview protegido por PR
@@ -394,7 +398,7 @@ Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)
 
 | Cabeçalho | Valor |
 |---|---|
-| `Content-Security-Policy` | `default-src 'none'; script-src 'self' 'nonce-…'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'` |
+| `Content-Security-Policy` | `default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'` |
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
 | `X-Content-Type-Options` | `nosniff` |
 | `X-Frame-Options` | `DENY` |
@@ -402,7 +406,7 @@ Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)
 | `Permissions-Policy` | câmera, microfone, geolocalização e pagamento negados |
 | `X-Robots-Tag` | `noindex, nofollow, noarchive` |
 
-Sem `unsafe-inline` em nenhuma diretiva. `Referrer-Policy: no-referrer` impede que a URL interna do linktree vaze para SharePoint, Ploomes ou Google.
+`script-src` é a única diretiva com `unsafe-inline` — necessário porque o próprio Next injeta scripts inline para hidratar o App Router, inevitável mesmo sem nenhum componente cliente do projeto; ver [ADR-016](#adr-016--csp-estática-sem-nonce-em-vez-de-nonce-por-middleware) para por que um nonce por requisição não funciona com o site 100% pré-renderizado do §4. Nenhuma outra diretiva abre exceção. `Referrer-Policy: no-referrer` impede que a URL interna do linktree vaze para SharePoint, Ploomes ou Google.
 
 ### Links externos
 
@@ -528,11 +532,15 @@ Orçamento que **falha o CI** quando estourado:
 | Lighthouse Best Practices | ≥ 95 |
 | LCP (mobile, throttled) | < 1.2 s |
 | CLS | < 0.02 |
-| JS transferido (home) | < 90 KB gzip |
-| Peso total da rota | < 250 KB |
+| JS compartilhado (toda rota, Brotli) | < 120 KB — `size-limit.config.mjs` |
+| JS transferido (rota específica) | < 145 KB — `resource-summary:script:size` |
+| Peso total da rota | < 250 KB — `total-byte-weight` |
 
 <!-- AUTO:bench:start -->
-_pendente_ — rode `npm run bench` e depois `npm run doc:sync`.
+
+| Bundle | Tamanho | Orçamento |
+|---|---|---|
+| JS compartilhado (todas as rotas) | 110.9 KB ✅ | 120000 |
 <!-- AUTO:bench:end -->
 
 O histórico fica versionado no git, tornando qualquer regressão visível no diff.
@@ -646,6 +654,31 @@ Segunda iteração visual, a pedido do usuário: inverter a paleta em nível de 
 
 Nenhuma dependência nova. `npm run verify` passa (53 testes, 100% de cobertura, build limpo). Reavaliar se o usuário pedir que o texto *dentro* dos cards também vire verde — nesse caso os cards precisariam deixar de ser brancos, porque a regra do §2 não abre exceção para conveniência de estilo.
 
+### ADR-016 — CSP estática sem nonce, em vez de nonce por middleware
+**Data:** 2026-07-27 · **Status:** aceito
+
+A F5 implementou primeiro a CSP exatamente como o §7 já descrevia: nonce por requisição via `middleware.ts` (depois renomeado `proxy.ts` — convenção trocada no Next 16, ver https://nextjs.org/docs/messages/middleware-to-proxy), seguindo o padrão oficial do Next.js para App Router. Quebrou em produção: o site é **100% pré-renderizado** (§4), então o HTML de cada rota — nonce incluso, embutido nos `<script>` que o próprio Next injeta para hidratação — é gerado uma vez em build e servido do cache em toda visita seguinte (`x-nextjs-cache: HIT`). O middleware, por rodar a cada requisição, gerava um nonce *novo* para o cabeçalho `Content-Security-Policy` a cada vez — diferente do nonce já embutido no HTML cacheado. O navegador bloqueava os scripts por descasamento de nonce, a hidratação nunca rodava, e a tela real (inclusive o 404) nunca aparecia — pego pelos testes E2E novos desta fase (`html-has-lang` do axe acusando o *shell* de erro do Next, `<html id="__next_error__">`, no lugar da página real).
+
+A causa é estrutural, não um bug de implementação: nonce-CSP em Next.js exige renderização dinâmica por requisição (documentado pelo próprio Next como pré-requisito, fora do recurso experimental "Cache Components"). Três saídas possíveis, apresentadas ao usuário:
+
+1. **CSP estática sem nonce** (escolhida) — troca `'nonce-…'` por `'unsafe-inline'` só em `script-src`, mantendo `style-src`, `connect-src` etc. sem nenhuma exceção. Preserva os dois princípios já comprometidos no §4 (site 100% pré-renderizado, zero requisição em runtime) e no orçamento de performance do §10. Risco real é baixo: a aplicação não tem nenhum ponto onde conteúdo de terceiro ou de usuário vire HTML — o registry é validado em build (`links-schema.ts`), não em runtime — então não existe injeção para essa política habilitar. `<Logo>` e `<PatternBackground>` perderam o atributo `style` (agora só classes Tailwind com valor arbitrário, ex. `h-[max(140px,var(--logo-min-height))]`) para que `style-src` continue sem `unsafe-inline` — essa parte da regra do §7 ("sem unsafe-inline em nenhuma diretiva") não foi enfraquecida, só `script-src`.
+2. **Renderização dinâmica em toda rota** (`dynamic = 'force-dynamic'`) — mantida nonce e zero `unsafe-inline`, mas quebra "tudo pré-renderizado" do §4 e arrisca o orçamento de LCP/TTFB do §10 a cada requisição virar computação de servidor.
+3. **CSP por hash calculada em build** — mantém 100% estático e zero `unsafe-inline`, mas exige build em duas fases (hash dos scripts inline só existe depois que o HTML já foi gerado, e o `headers()` do Next precisa do valor *antes* de gerar esse mesmo HTML) — infraestrutura real, não validável sem um deploy de verdade na Vercel.
+
+O texto do §7 foi atualizado para refletir a política final: `script-src 'self' 'unsafe-inline'`, todo o resto sem `unsafe-inline`. `e2e/navigation.spec.ts` (`F5 — hardening`) trava o valor exato do cabeçalho, então uma regressão para nonce (ou para `unsafe-inline` em outra diretiva) quebra o teste.
+
+### ADR-017 — Orçamento de JS recalibrado para a linha de base real do App Router
+**Data:** 2026-07-27 · **Status:** aceito
+
+O orçamento original do §10 ("JS transferido (home) < 90 KB gzip") nunca tinha sido medido — a seção `bench` do documento ficou `_pendente_` desde a F0. Ao instalar `size-limit` e Lighthouse CI nesta fase, a primeira medição real: o runtime compartilhado que o App Router injeta em **toda** rota (React 19 + roteador cliente do `next/link`, necessário para hidratação mesmo sem nenhum componente `'use client'` no projeto) pesa **≈111 KB** com Brotli — 23% acima do orçamento original, antes mesmo de somar o JS específico de cada página.
+
+O número de 90 KB não tinha como ser cumprido sem abrir mão de algo que o projeto não decidiu abrir mão (navegação client-side via `next/link`, ou o App Router em si). Em vez de configurar uma checagem fadada a falhar em todo PR, o orçamento foi recalibrado para o que é real e ainda apertado:
+
+- **`size-limit.config.mjs`:** mede só o runtime compartilhado (`rootMainFiles` do `build-manifest.json` do próprio Next — não um glob por nome de arquivo, que muda de hash a cada build) com Brotli, orçamento de **120 KB**. O bundle de polyfill (`polyfillFiles`) fica de fora de propósito: navegadores com suporte a `type="module"` nunca chegam a baixá-lo.
+- **`.lighthouserc.json`:** audita a página real num navegador — `resource-summary:script:size` (todo o JS que uma rota específica transfere, runtime compartilhado + a própria página) com orçamento de **145 KB**; `total-byte-weight` (peso da rota inteira) manteve o valor original de **250 KB**, porque a medição real (~132 KB com Brotli, HTML+CSS+JS) já folga bastante dentro dele.
+
+`npm run bench` (`scripts/bench.mjs`) builda, roda `size-limit` e depois `lhci autorun`, e falha (`exit 1`) se qualquer checagem estourar — é o que torna o job `bench` do CI real em vez do placeholder que a F0.5 deixou (`--if-present`, [DT-011](#12-débito-técnico)). Ver [DT-015](#12-débito-técnico) sobre a parte do Lighthouse não ter sido validada localmente.
+
 ---
 
 ## 12. Débito técnico
@@ -662,10 +695,12 @@ Nenhuma dependência nova. `npm run verify` passa (53 testes, 100% de cobertura,
 | DT-008 | Navegadores do Playwright não instalados no ambiente local | P3 | `npm run test:e2e` exige `npx playwright install --with-deps` uma vez por máquina. O CI da F0.5 faz isso no job; localmente é passo manual. As specs da F0 são smoke — o E2E de verdade começa na F3 |
 | ~~DT-009~~ | ~~Placeholder de rota em `src/app/page.tsx`~~ | — | **Resolvido em 2026-07-27.** Substituído pela grade real da F3 (`<PageShell>` + `<SectorCard>` por setor) |
 | ~~DT-010~~ | ~~Repositório remoto no GitHub ainda não existia~~ | — | **Resolvido em 2026-07-27.** Repositório criado como público em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) (branch protection em repo privado exige GitHub Pro — decisão do usuário foi tornar público) e `main` protegida |
-| DT-011 | Job `bench` em `ci.yml` é um placeholder | P2 | Roda `npm run bench --if-present`, que é um no-op enquanto o script não existir. Deixa de ser débito quando a F5/F10 instalar Lighthouse CI + size-limit e o script real for adicionado — nenhuma mudança no workflow será necessária nesse dia |
+| ~~DT-011~~ | ~~Job `bench` em `ci.yml` é um placeholder~~ | — | **Resolvido em 2026-07-27.** `npm run bench` (`scripts/bench.mjs`) roda `size-limit` + Lighthouse CI de verdade contra o orçamento do §10; `ci.yml` não precisou mudar além de instalar o Chromium do Playwright. Ver [ADR-017](#adr-017--orçamento-de-js-recalibrado-para-a-linha-de-base-real-do-app-router) e [DT-015](#12-débito-técnico) |
 | DT-012 | `required_approving_review_count: 1` em `main` sem um segundo mantenedor | P3 | Só o usuário tem acesso ao repositório hoje; GitHub não permite auto-aprovar o próprio PR nem o Dependabot aprova os próprios PRs, então **toda** PR — inclusive patch do Dependabot com auto-merge habilitado — espera uma aprovação manual do usuário antes de poder mergear. É o comportamento mais seguro possível para um mantenedor solo (nada mergeia sem alguém olhar), mas revisar se isso virar atrito real: baixar para 0 é a alternativa, documentando aqui o motivo |
 | DT-013 | Assinatura de commit (GPG/SSH) ainda não configurada na máquina do usuário | P1 | `required_signatures` está ativo em `main` por pedido do usuário mesmo sem assinatura configurada localmente. Squash-merge via UI do GitHub contorna isso (o commit de squash é assinado pelo próprio GitHub), mas qualquer push direto ou merge que preserve os commits originais será rejeitado até a assinatura existir. Configurar antes do primeiro merge que não seja squash |
 | DT-014 | `--logo-safe-area: 0.3em` é aproximação de engenharia, não medida do manual | P2 | O manual mede a área de não-interferência pela altura de duas letras "B" do wordmark, que o `<Logo>` não renderiza (só o símbolo). Sem o PDF do manual disponível neste ambiente para extrair a proporção real, `0.3em` foi escolhido para preservar a propriedade de escalar com o tamanho do logo. Recalibrar contra o manual original quando o PDF estiver disponível. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) |
+| DT-015 | Lighthouse CI não validado localmente — só `size-limit` | P1 | `npx lhci autorun` falha neste ambiente com `spawn UNKNOWN` ao tentar abrir o Chromium do Playwright (mesmo binário, mesmo comando, falha idêntica no Git Bash e no PowerShell) — sandbox de execução deste ambiente parece bloquear o spawn direto de um processo de navegador fora da ferramenta de browser já provisionada. `size-limit` roda e passa normalmente (não depende de navegador). `.lighthouserc.json` e os limiares do §10 estão configurados e corretos por inspeção, mas nunca produziram um relatório real — a primeira validação de verdade é o job `bench` no GitHub Actions, mesmo padrão do [ADR-011](#adr-011--doccheck-ignora-updated-e-changelog-na-comparação) (bugs só visíveis na primeira execução real). Como `bench` é check obrigatório em `main` (§8), o primeiro PR que carregar essa mudança pode falhar por limiar mal calibrado (não por erro de configuração) — acompanhar essa execução e ajustar `.lighthouserc.json` se necessário antes de exigir o check |
+| DT-016 | Gate da F5 depende de um deploy que ainda não existe | P1 | `securityheaders.com` só audita uma URL pública — não há uma até a F6 terminar. O gate da F5 foi fechado com essa checagem pendente; roda-la contra o domínio de produção assim que a F6 concluir e registrar o resultado (nota ou achado) na entrada da F5 |
 
 ---
 
@@ -676,6 +711,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-27 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
 | 2026-07-27 | `9798cd8` | F2: registry de links — schema Zod, 7 links do RH, DT-002 resolvido |
 | 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
 | 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |

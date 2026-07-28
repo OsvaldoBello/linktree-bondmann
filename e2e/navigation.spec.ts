@@ -108,3 +108,39 @@ test.describe('F4 — telas de setor', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+test.describe('F5 — hardening', () => {
+  test('cabeçalhos de segurança estão presentes em toda rota', async ({ page }) => {
+    const response = await page.goto('/');
+    const headers = response?.headers() ?? {};
+
+    expect(headers['content-security-policy']).toBe(
+      "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    );
+    expect(headers['strict-transport-security']).toBe(
+      'max-age=63072000; includeSubDomains; preload',
+    );
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['referrer-policy']).toBe('no-referrer');
+    expect(headers['permissions-policy']).toBe(
+      'camera=(), microphone=(), geolocation=(), payment=()',
+    );
+    expect(headers['x-robots-tag']).toBe('noindex, nofollow, noarchive');
+    expect(headers['x-powered-by']).toBeUndefined();
+  });
+
+  test('robots.txt nega todo indexador', async ({ page }) => {
+    const response = await page.goto('/robots.txt');
+    expect(response?.status()).toBe(200);
+    expect(await response?.text()).toContain('Disallow: /');
+  });
+
+  test('404 não tem violações de acessibilidade', async ({ page }) => {
+    await page.goto('/setor/nao-existe');
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  });
+});

@@ -1,9 +1,7 @@
 name: CI
 
-# PROJECT.md §5 (F0.5) e §8. Três checks reais hoje (verify, doc-drift, e2e) e
-# um placeholder (bench): `--if-present` faz o passo ser um no-op até a F5/F10
-# instalarem Lighthouse CI e size-limit — nesse dia o job passa a valer de
-# verdade sem precisar tocar neste arquivo.
+# PROJECT.md §5 (F0.5) e §8. Cinco checks: verify, doc-drift, e2e, bench
+# (Lighthouse CI + size-limit contra o orçamento do §10, desde a F5) e audit.
 on:
   push:
     branches: [main]
@@ -122,8 +120,10 @@ jobs:
           cache: npm
       - name: Instalar dependências (lifecycle scripts bloqueados)
         run: npm ci --ignore-scripts
-      - name: npm run bench (placeholder até a F5/F10 — PROJECT.md §10)
-        run: npm run bench --if-present
+      - name: Instalar Chromium do Playwright (o Lighthouse audita com ele — DT-008)
+        run: npx playwright install --with-deps chromium
+      - name: npm run bench (Lighthouse CI + size-limit — PROJECT.md §10)
+        run: npm run bench
 
   audit:
     name: audit

@@ -12,6 +12,7 @@ next-env.d.ts
 # testes e relatórios
 coverage/
 .lighthouseci/
+.size-limit.json
 playwright-report/
 test-results/
 blob-report/
