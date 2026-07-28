@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 17:30 UTC | `8fa4b5a` | `feat/f2-registry-links` |
+| 2026-07-28 17:37 UTC | `e0cbb03` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -825,7 +825,7 @@ Orçamento novo em `.lighthouserc.json`, com margem sobre o medido (não o valor
 
 Os artefatos de investigação (`.lighthouseci/*.json` publicados como artefato `lighthouse-reports`) foram removidos do `ci.yml` depois de cumprirem o papel — eram temporários por definição, e o achado já está registrado aqui.
 
----
+**Correção — `categories:performance` também precisou de margem.** A recalibração inicial deste ADR ajustou LCP, peso total e JS por rota, mas deixou `categories:performance` em `minScore: 0.98` — passou por acaso no run que gerou os números acima. No push seguinte (mesmo código, orçamento já recalibrado), a categoria reprovou nesse limiar: `found: 0.97` na home, a mesma faixa de variação (0.96–0.99) já registrada nesta seção como ruído normal de execução, mesmo com `numberOfRuns: 3`. Não é um metric novo nem uma decisão nova — é a mesma recalibração desta ADR, só que aplicada ao limiar que a primeira rodada de validação não tinha exercitado o suficiente para expor. Ajustado para `minScore: 0.95`, dando a mesma margem de segurança usada nos outros três limiares.
 
 ## 12. Débito técnico
 
@@ -862,6 +862,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `e0cbb03` | recalibrar orçamento de performance (§10) contra medição real; numberOfRuns 3 permanente |
 | 2026-07-28 | `8fa4b5a` | investigação DT-020: 3 execuções do Lighthouse (mediana) + upload dos relatórios |
 | 2026-07-28 | `61b1ee4` | docs: registrar a primeira medição real do bench — CI são, orçamento não |
 | 2026-07-28 | `95444c8` | fix: upload-artifact ignora .size-limit.json por ser dotfile |
