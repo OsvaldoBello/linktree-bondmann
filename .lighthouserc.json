@@ -5,7 +5,7 @@
       "startServerReadyPattern": "Ready in",
       "startServerReadyTimeout": 30000,
       "url": ["http://127.0.0.1:3000/", "http://127.0.0.1:3000/setor/marketing"],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "onlyCategories": ["performance", "accessibility", "best-practices"],
         "formFactor": "mobile",

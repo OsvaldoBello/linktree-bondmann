@@ -162,6 +162,18 @@ jobs:
           include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
+      # TEMPORÁRIO — investigação da DT-020 (score de performance muito pior
+      # em /setor/marketing do que na home). Remover depois que a causa for
+      # entendida e o §10 estiver recalibrado ou a app otimizada.
+      - name: Relatórios do Lighthouse (investigação DT-020)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/*.json
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
 
   audit:
     name: audit
