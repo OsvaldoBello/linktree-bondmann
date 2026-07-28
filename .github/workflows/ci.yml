@@ -149,12 +149,17 @@ jobs:
       # reproduzir a região AUTO:bench do PROJECT.md — sem isso, aquele job
       # não tem como recalcular o mesmo número que está commitado, e falha em
       # todo push, independente do documento estar de fato desatualizado.
+      # `include-hidden-files: true`: sem isso, `upload-artifact` ignora
+      # silenciosamente qualquer caminho que comece com `.` — o padrão é
+      # pensado para não subir sem querer coisas como `.git`, mas aqui o
+      # próprio artefato que a gente quer É um dotfile.
       - name: Artefato size-limit (para a região AUTO:bench do doc-drift)
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: size-limit-json
           path: .size-limit.json
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: warn
 

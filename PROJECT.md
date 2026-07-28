@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 17:00 UTC | `73d39b0` | `feat/f2-registry-links` |
+| 2026-07-28 17:01 UTC | `42c8168` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -819,6 +819,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `42c8168` | fix: chromeFlags do Lighthouse CI precisa ser string, não array |
 | 2026-07-28 | `73d39b0` | fix: bench e doc-drift falhavam em todo push — sandbox do Chrome e artefato ausente |
 | 2026-07-28 | `2c22658` | F6: dashboard comercial cross-listado e busca client-side na home |
 | 2026-07-28 | `febf9ce` | docs: corrigir o DT-017 — produção deploya desta branch, não de main |
