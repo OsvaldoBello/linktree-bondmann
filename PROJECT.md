@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 16:51 UTC | `2c22658` | `feat/f2-registry-links` |
+| 2026-07-28 17:00 UTC | `73d39b0` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -781,6 +781,8 @@ Deliberadamente **não** baixado: `.lighthouseci/manifest.json`. Incluir a tabel
 
 Validado: `zizmor --persona=pedantic`, offline e online (com token), roda zero achados contra os workflows atualizados — mesmo padrão de validação do [ADR-009](#adr-009--gitleaks-semgrep-e-zizmor-via-cli-fixada-em-vez-de-actions-de-terceiros). Os nomes dos cinco jobs (`verify`, `doc-drift`, `e2e`, `bench`, `audit`) não mudaram — são os checks obrigatórios da proteção de `main` (§8), e alterá-los quebraria a correspondência por nome.
 
+**Correção — `chromeFlags` é string, não array.** A primeira versão deste ADR configurou `chromeFlags: ["--no-sandbox", "--disable-dev-shm-usage"]` (array JSON) — e o CI continuou batendo em `No usable sandbox!` mesmo assim, com o run real confirmando que a flag nunca chegou ao Chrome. Causa: `node_modules/@lhci/cli/src/collect/node-runner.js` faz `chromeFlagsAsString = chromeFlags || ''; chromeFlagsAsString += ' --headless=new'` — um array, ao passar por essa concatenação, é coagido por `Array.prototype.toString()` (junta os elementos por **vírgula**, não espaço), virando `"--no-sandbox,--disable-dev-shm-usage --headless=new"`. O Chrome recebe isso como uma única flag inválida (com vírgula literal), não duas flags — o sandbox nunca foi desativado. Confirmado lendo o código-fonte instalado e o próprio `lighthouse/cli/cli-flags.js`, que declara `'chrome-flags': { type: 'string' }`, "espaço-delimitado" — exatamente o formato de um `--chrome-flags` de linha de comando, nunca um array JSON. Corrigido para `"chromeFlags": "--no-sandbox --disable-dev-shm-usage"` (string). Validado localmente reproduzindo a mesma lógica de concatenação do `node-runner.js` fora do Lighthouse (não dá para rodar o Chrome em si aqui — [DT-015](#12-débito-técnico)), confirmando que a string final fica `"--no-sandbox --disable-dev-shm-usage --headless=new"`, três flags corretas. A primeira execução real do `bench` no CI é quem confirma de fato — ver [DT-020](#12-débito-técnico).
+
 ---
 
 ## 12. Débito técnico
@@ -817,6 +819,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `73d39b0` | fix: bench e doc-drift falhavam em todo push — sandbox do Chrome e artefato ausente |
 | 2026-07-28 | `2c22658` | F6: dashboard comercial cross-listado e busca client-side na home |
 | 2026-07-28 | `febf9ce` | docs: corrigir o DT-017 — produção deploya desta branch, não de main |
 | 2026-07-28 | `a5c3a77` | ajustes de home: texto, ordem alfabética, fundo fixo e favicon legível |
