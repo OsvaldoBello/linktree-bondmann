@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 12:20 UTC | `cda9711` | `feat/f2-registry-links` |
+| 2026-07-28 12:44 UTC | `5ad331b` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -196,6 +196,7 @@ postcss.config.mjs            ← Tailwind v4
 scripts/
   sync-master-doc.mjs         ← motor de auto-atualização deste documento
   validate-links.ts           ← valida o registry fora do build (Node 24 roda TS nativo)
+  generate-favicon.mjs        ← gera public/favicon.ico a partir da geometria de icon.svg
 .claude/settings.json         ← hook Stop → doc:sync
 .github/
   workflows/ci.yml            ← verify + doc-drift + e2e + bench (placeholder até F5/F10) + audit
@@ -208,7 +209,7 @@ next.config.ts                ← cabeçalhos de segurança
 src/
   app/
     layout.tsx                ← shell, fontes, metadata noindex
-    icon.svg                  ← favicon (símbolo oficial, verde sólido — convenção App Router)
+    icon.svg                  ← favicon (símbolo verde sobre placa navy — convenção App Router)
     page.tsx                  ← home: grade de setores
     setor/[slug]/page.tsx     ← tela de setor (estática)
     not-found.tsx
@@ -225,7 +226,8 @@ src/
     LinkButton.tsx            ← rel seguro obrigatório
   styles/tokens.css           ← tokens do manual
 e2e/                          ← specs do Playwright
-public/brand/                  ← logo.svg, favicons
+public/brand/                 ← logo.svg
+public/favicon.ico            ← fallback do favicon, gerado e commitado (ADR-020)
 ```
 
 ### Fluxo de dados
@@ -236,6 +238,7 @@ public/brand/                  ← logo.svg, favicons
 
 - Componentes são Server Components por padrão. `'use client'` exige justificativa em comentário.
 - Slugs de setor são gerados no registry e imutáveis — mudá-los quebra links compartilhados. Renomear exige entrada no ADR e um redirect.
+- A ordem do array `sectors` é a ordem exibida na home, e é **alfabética por nome** (`localeCompare` pt-BR) — travada por teste em `src/content/links.test.ts`. Ver [ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport).
 - Nenhum componente recebe URL por prop arbitrária; sempre um objeto `Link` já validado.
 
 ---
@@ -313,6 +316,8 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 
 **Gate:** produção no ar, os 30 links conferidos manualmente.
 
+Primeiro passo desta fase, e pré-requisito de tudo o mais: **mergear em `main`**. `origin/main` ainda está no commit da F0.5, então nenhum deploy de produção contém a F1–F5 — ver [DT-017](#12-débito-técnico).
+
 ### F7 — Operação
 - [ ] Link health check semanal (HEAD nas URLs, abre issue em 4xx/5xx)
 - [ ] Vercel Analytics cookieless
@@ -325,27 +330,7 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 
 **7 setores, 30 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
-### Marketing — 7 links
-| Título | Destino |
-|---|---|
-| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
-| Mídia Compartilhada · Solicitação de Entrada | Google Forms |
-| Mídia Compartilhada · Detalhes da Campanha | Google Forms |
-| Mídia Compartilhada · Planilhas de Leads | Google Sheets |
-| Mídia Compartilhada · Formulário de Feedback | Google Forms |
-| Mídia Compartilhada · Solicitação de Alteração de Campanha | Google Forms |
-| Mídia Compartilhada · Criativos | Google Drive (pasta) |
-
-### TI — 2 links
-| Título | Destino |
-|---|---|
-| Dashboard Comercial | `dashboard-bondmann-production.up.railway.app` |
-| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
-
-### Compras — 1 link
-| Título | Destino |
-|---|---|
-| Transportadoras Habilitadas para Frete CIF | SharePoint (planilha) |
+Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
 ### Comercial — 12 links
 | Título | Destino |
@@ -363,10 +348,29 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 | Ficha Cadastral para Clientes | SharePoint (Word) |
 | FB037/10 · Relação de Amostras | SharePoint (Word) |
 
+### Compras — 1 link
+| Título | Destino |
+|---|---|
+| Transportadoras Habilitadas para Frete CIF | SharePoint (planilha) |
+
+### Controladoria — *Em breve*
+Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)).
+
 ### Depto. Químico — 1 link
 | Título | Destino |
 |---|---|
 | AlquimIA | `linktr.ee/gptsbondmann` |
+
+### Marketing — 7 links
+| Título | Destino |
+|---|---|
+| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
+| Mídia Compartilhada · Solicitação de Entrada | Google Forms |
+| Mídia Compartilhada · Detalhes da Campanha | Google Forms |
+| Mídia Compartilhada · Planilhas de Leads | Google Sheets |
+| Mídia Compartilhada · Formulário de Feedback | Google Forms |
+| Mídia Compartilhada · Solicitação de Alteração de Campanha | Google Forms |
+| Mídia Compartilhada · Criativos | Google Drive (pasta) |
 
 ### RH — 7 links
 | Título | Destino |
@@ -379,8 +383,11 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 | FB031 · Solicitação de Contratação | Microsoft Forms |
 | FB032 · Solicitação de Encerramento de Contrato | Microsoft Forms |
 
-### Controladoria — *Em breve*
-Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)).
+### TI — 2 links
+| Título | Destino |
+|---|---|
+| Dashboard Comercial | `dashboard-bondmann-production.up.railway.app` |
+| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
 
 ### Setores removidos do escopo
 **Financeiro** e **Produção** não constam da v1 — não possuíam links e não há previsão. Reintroduzir exige apenas adicioná-los ao registry.
@@ -687,6 +694,29 @@ A CSP estrita do §7 (`script-src 'self' 'unsafe-inline'`, sem `unsafe-eval`) va
 
 `next.config.ts` agora acrescenta `'unsafe-eval'` a `script-src` só quando `process.env.NODE_ENV !== 'production'`. O `next build` que o CI e a Vercel servem nunca inclui essa exceção — `headers()` roda de novo em build de produção com `NODE_ENV=production`, então o texto do §7 continua descrevendo exatamente o que vai ao ar. Risco real é zero: `unsafe-eval` nunca chega à CSP servida em produção.
 
+### ADR-019 — Ordem alfabética no registry e textura de fundo ancorada no viewport
+**Data:** 2026-07-28 · **Status:** aceito
+
+Dois ajustes de apresentação pedidos pelo usuário, sem mudança de conteúdo nem de schema.
+
+**Ordem dos setores.** O array `sectors` estava na ordem em que os links foram migrados do `Links externos.docx` (Marketing primeiro, Controladoria por último) — uma ordem que só fazia sentido para quem tinha acompanhado a migração. Passou a ser **alfabética por `name`**, via `localeCompare(pt-BR)`: Comercial, Compras, Controladoria, Depto. Químico, Marketing, RH, TI. A alternativa seria ordenar na renderização (`page.tsx`), deixando o registry na ordem de origem — descartada porque criaria duas ordens diferentes para a mesma lista, e quem abrisse `links.ts` veria uma coisa e o site outra. A ordem do array **é** a ordem da tela, e `src/content/links.test.ts` trava isso: um setor novo inserido no lugar errado quebra o teste. Consequência aceita: "Controladoria (Em breve)" deixou de ficar no fim da lista e agora aparece em terceiro — ordem alfabética não abre exceção por status, senão volta a ser uma ordem que precisa ser explicada.
+
+**Textura de fundo.** `<PatternBackground>` usava `absolute inset-0`, então se dimensionava pelo container — que tem a altura do documento, diferente em cada rota (a home tem 7 cards; Comercial, 12 links). Como os dois símbolos são dimensionados em porcentagem (`h-[140%]`, `w-[90%]`), o fundo mudava de escala e de posição a cada clique, e ainda rolava junto com o conteúdo: a "mexida" que o usuário relatou. Trocado por `fixed inset-0` — o fundo passa a ser do viewport, idêntico e imóvel em toda tela e em qualquer scroll. Medido no navegador: o símbolo fica em 1771×1008 px na mesma posição na home (documento de 1002 px) e em `/setor/comercial` (1316 px), e não se desloca após rolar 400 px. Continua `aria-hidden`, `pointer-events-none` e sem atributo `style` (a CSP do §7 não permite `unsafe-inline` em `style-src`). `PatternBackground.test.tsx` ganhou um teste que trava o `fixed`.
+
+### ADR-020 — Favicon: símbolo verde sobre placa navy, mais fallback `.ico` gerado
+**Data:** 2026-07-28 · **Status:** aceito · **supersede a arte do commit `5ad331b`**
+
+O favicon anterior era o símbolo em verde sólido, sem fundo, no viewBox original (1582.88×1742.56). Dois problemas, ambos relatados como "não está com o logo da Bondmann na guia":
+
+- **Ilegível no tamanho real.** O símbolo é um contorno de seis anéis finos. A 16 px, sem fundo e sobre a guia clara do navegador, os anéis somem — o traço fica com menos de 1 px. O ícone tecnicamente carregava, mas não se lia como a marca.
+- **ViewBox retangular.** A guia desenha o ícone num quadrado; um viewBox 0.91:1 sobrava espaço lateral e encolhia ainda mais o desenho.
+
+`src/app/icon.svg` passou a ser um canvas quadrado 512×512: placa navy de cantos arredondados (`rx=96`) com o símbolo em verde centralizado a 384 px — 64 px de respiro de cada lado, análogo à safe-area do manual (§2). Verde sobre navy é o par já aprovado no §2 (≈5.2:1); a proibição do verde vale para texto sobre fundo claro, não para ícone decorativo. A placa não é ornamento: é o que dá silhueta ao ícone num tamanho em que contorno fino não sobrevive.
+
+**Fallback `.ico`.** Todo navegador atual lê favicon SVG, mas Safari anterior ao 16.4, atalhos do Windows e ferramentas que pedem `/favicon.ico` direto (sem ler o HTML) não. `scripts/generate-favicon.mjs` gera `public/favicon.ico` (PNG embutido, 16/32/48 px) a partir da **mesma geometria** do SVG — placa de cantos arredondados e seis coroas circulares em arranjo hexagonal, tudo analítico, com supersampling 4×4 para antialiasing. Sem dependência nova: o PNG sai do `zlib` do próprio Node e o container ICO são 22 bytes de cabeçalho. O arquivo é **commitado**; o build não roda o script. Rodar de novo só se `icon.svg` mudar. O `<link rel="icon">` continua vindo da convenção do App Router (`/icon.svg?<hash>`) — o hash é cache-buster, e trocá-lo por um `metadata.icons` manual perderia exatamente isso, que é o que faz o navegador largar o favicon velho.
+
+Não corrige, por si só, o que o usuário está vendo: o favicon (e todo o resto da F1–F5) só existe nesta branch. Ver [DT-017](#12-débito-técnico).
+
 ---
 
 ## 12. Débito técnico
@@ -709,6 +739,7 @@ A CSP estrita do §7 (`script-src 'self' 'unsafe-inline'`, sem `unsafe-eval`) va
 | DT-014 | `--logo-safe-area: 0.3em` é aproximação de engenharia, não medida do manual | P2 | O manual mede a área de não-interferência pela altura de duas letras "B" do wordmark, que o `<Logo>` não renderiza (só o símbolo). Sem o PDF do manual disponível neste ambiente para extrair a proporção real, `0.3em` foi escolhido para preservar a propriedade de escalar com o tamanho do logo. Recalibrar contra o manual original quando o PDF estiver disponível. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) |
 | DT-015 | Lighthouse CI não validado localmente — só `size-limit` | P1 | `npx lhci autorun` falha neste ambiente com `spawn UNKNOWN` ao tentar abrir o Chromium do Playwright (mesmo binário, mesmo comando, falha idêntica no Git Bash e no PowerShell) — sandbox de execução deste ambiente parece bloquear o spawn direto de um processo de navegador fora da ferramenta de browser já provisionada. `size-limit` roda e passa normalmente (não depende de navegador). `.lighthouserc.json` e os limiares do §10 estão configurados e corretos por inspeção, mas nunca produziram um relatório real — a primeira validação de verdade é o job `bench` no GitHub Actions, mesmo padrão do [ADR-011](#adr-011--doccheck-ignora-updated-e-changelog-na-comparação) (bugs só visíveis na primeira execução real). Como `bench` é check obrigatório em `main` (§8), o primeiro PR que carregar essa mudança pode falhar por limiar mal calibrado (não por erro de configuração) — acompanhar essa execução e ajustar `.lighthouserc.json` se necessário antes de exigir o check |
 | DT-016 | Gate da F5 depende de um deploy que ainda não existe | P1 | `securityheaders.com` só audita uma URL pública — não há uma até a F6 terminar. O gate da F5 foi fechado com essa checagem pendente; roda-la contra o domínio de produção assim que a F6 concluir e registrar o resultado (nota ou achado) na entrada da F5 |
+| DT-017 | **`main` está parada na F0.5 — nada da F1–F5 está no ar** | P0 | `origin/main` aponta para `688e80b` ("ci: bloquear Dependabot…"), sete commits atrás desta branch. Tudo que veio depois — design system, registry, home, telas de setor, hardening e o favicon — vive só em `feat/f2-registry-links`. Qualquer deploy de produção da Vercel (que segue `main`) serve o placeholder da F0: sem favicon, sem setores, sem redesenho. É a explicação para "o logo da Bondmann não aparece na guia" continuar valendo depois de cada correção de favicon. **Nenhum ajuste de código resolve isso**; é preciso abrir o PR desta branch para `main`, passar pelos checks obrigatórios do §8 e mergear — e, se o que o usuário está olhando for um preview de PR, forçar recarga sem cache, porque favicon é dos ativos mais agressivamente cacheados pelo navegador. Ver [ADR-020](#adr-020--favicon-símbolo-verde-sobre-placa-navy-mais-fallback-ico-gerado) |
 
 ---
 
@@ -719,8 +750,9 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `5ad331b` | favicon verde + unsafe-eval na CSP só em desenvolvimento |
 | 2026-07-28 | `cda9711` | F5: hardening da aplicação e do pipeline |
-| 2026-07-27 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
+| 2026-07-28 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
 | 2026-07-27 | `9798cd8` | F2: registry de links — schema Zod, 7 links do RH, DT-002 resolvido |
 | 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
 | 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |

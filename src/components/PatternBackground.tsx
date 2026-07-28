@@ -7,10 +7,17 @@ import { SYMBOL_PATHS, SYMBOL_VIEW_BOX } from './brand-symbol';
  * tons claros (verde, branco) em baixa opacidade, não navy sobre navy.
  * Sempre decorativo: `aria-hidden` e `pointer-events-none` para nunca
  * competir com o `<Logo>` legível nem interceptar cliques.
+ *
+ * Ancorado no viewport (`fixed`), não no fluxo da página — ver ADR-019. Com
+ * `absolute`, a textura acompanhava a altura do documento: cada rota tem uma
+ * quantidade diferente de cards, então os símbolos (dimensionados em `%` do
+ * container) mudavam de escala e de posição a cada navegação, e ainda
+ * rolavam junto com o conteúdo. `fixed` deixa o fundo idêntico e imóvel em
+ * toda tela.
  */
 export function PatternBackground() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="bg-dot-grid absolute inset-0 opacity-[0.06]" />
       <svg
         viewBox={SYMBOL_VIEW_BOX}

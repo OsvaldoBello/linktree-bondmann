@@ -6,6 +6,8 @@
  *   - Somente `https://`. Encurtadores são proibidos.
  *   - O `slug` do setor entra na URL pública e é PERMANENTE. Renomear quebra
  *     links já compartilhados — exige redirect e entrada no ADR.
+ *   - Os setores ficam em ordem alfabética por `name` (pt-BR) — a ordem deste
+ *     array é a ordem exibida na home. Travado por teste em `links.test.ts`.
  *
  * Validado por `../lib/links-schema` (Zod) a cada import de `sectors` — um
  * link malicioso ou com typo derruba o build antes de chegar a produção.
@@ -46,89 +48,6 @@ export interface Sector {
 const PORTAL_DE_CHAMADOS = 'https://portal-chamados-bondmann-production.up.railway.app/workspace';
 
 export const sectors: readonly Sector[] = [
-  {
-    slug: 'marketing',
-    name: 'Marketing',
-    status: 'active',
-    tagline: 'Chamados, campanhas e mídia compartilhada',
-    links: [
-      {
-        id: 'portal-chamados',
-        title: 'Portal de Chamados',
-        href: PORTAL_DE_CHAMADOS,
-      },
-      {
-        id: 'midia-solicitacao-entrada',
-        title: 'Solicitação de Entrada',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSeKM6Zf156lvIcJkHTx-kYyqd8DmEDoHB6Sv_x1Chbm9rtaPA/viewform',
-      },
-      {
-        id: 'midia-detalhes-campanha',
-        title: 'Detalhes da Campanha',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSf3pXNjoc4XrYhGUcvzIh6InowH8CBiqkCPGuHp_djItndTpg/viewform',
-      },
-      {
-        id: 'midia-planilhas-leads',
-        title: 'Planilhas de Leads',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/spreadsheets/d/1JpBSINVkN9K8EBcgbzq3TWdb-fudAemlZaymV7-orMQ/edit?gid=1984125120#gid=1984125120',
-      },
-      {
-        id: 'midia-feedback',
-        title: 'Formulário de Feedback',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSejna3J989_DUDwvXOnS1nOYe7PnSRS3CI_4FRIzcyaDy7qWA/viewform',
-      },
-      {
-        id: 'midia-alteracao-campanha',
-        title: 'Solicitação de Alteração de Campanha',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLScTwSUwyVE4Rvn5EEvEN5VnU7muZHLcn9N09ywrjeJHm98kzA/viewform',
-      },
-      {
-        id: 'midia-criativos',
-        title: 'Criativos',
-        description: 'Mídia Compartilhada',
-        href: 'https://drive.google.com/drive/folders/1LcuhAMDepDLf2qASl94uxrSDeh_MKREh?usp=sharing',
-      },
-    ],
-  },
-
-  {
-    slug: 'ti',
-    name: 'TI',
-    status: 'active',
-    tagline: 'Dashboards e suporte técnico',
-    links: [
-      {
-        id: 'dashboard-comercial',
-        title: 'Dashboard Comercial',
-        href: 'https://dashboard-bondmann-production.up.railway.app/',
-      },
-      {
-        id: 'portal-chamados',
-        title: 'Portal de Chamados',
-        href: PORTAL_DE_CHAMADOS,
-      },
-    ],
-  },
-
-  {
-    slug: 'compras',
-    name: 'Compras',
-    status: 'active',
-    tagline: 'Fornecedores e logística',
-    links: [
-      {
-        id: 'transportadoras-cif',
-        title: 'Transportadoras Habilitadas para Frete CIF',
-        href: 'https://bondmannquimica.sharepoint.com/:x:/s/comite.gestao/IQB0rE0ILcgcTKd0LFYVm7EsAYv8wIcWhTOgdYgqEZOogYU?e=uOaSPm',
-      },
-    ],
-  },
-
   {
     slug: 'comercial',
     name: 'Comercial',
@@ -207,6 +126,29 @@ export const sectors: readonly Sector[] = [
   },
 
   {
+    slug: 'compras',
+    name: 'Compras',
+    status: 'active',
+    tagline: 'Fornecedores e logística',
+    links: [
+      {
+        id: 'transportadoras-cif',
+        title: 'Transportadoras Habilitadas para Frete CIF',
+        href: 'https://bondmannquimica.sharepoint.com/:x:/s/comite.gestao/IQB0rE0ILcgcTKd0LFYVm7EsAYv8wIcWhTOgdYgqEZOogYU?e=uOaSPm',
+      },
+    ],
+  },
+
+  {
+    slug: 'controladoria',
+    name: 'Controladoria',
+    status: 'coming-soon',
+    // DT-001: aguardando o link do aplicativo OnFly.
+    tagline: 'Em breve',
+    links: [],
+  },
+
+  {
     slug: 'departamento-quimico',
     name: 'Depto. Químico',
     status: 'active',
@@ -217,6 +159,56 @@ export const sectors: readonly Sector[] = [
         title: 'AlquimIA',
         description: 'Assistentes de IA da Bondmann',
         href: 'https://linktr.ee/gptsbondmann',
+      },
+    ],
+  },
+
+  {
+    slug: 'marketing',
+    name: 'Marketing',
+    status: 'active',
+    tagline: 'Chamados, campanhas e mídia compartilhada',
+    links: [
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+      {
+        id: 'midia-solicitacao-entrada',
+        title: 'Solicitação de Entrada',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSeKM6Zf156lvIcJkHTx-kYyqd8DmEDoHB6Sv_x1Chbm9rtaPA/viewform',
+      },
+      {
+        id: 'midia-detalhes-campanha',
+        title: 'Detalhes da Campanha',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSf3pXNjoc4XrYhGUcvzIh6InowH8CBiqkCPGuHp_djItndTpg/viewform',
+      },
+      {
+        id: 'midia-planilhas-leads',
+        title: 'Planilhas de Leads',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/spreadsheets/d/1JpBSINVkN9K8EBcgbzq3TWdb-fudAemlZaymV7-orMQ/edit?gid=1984125120#gid=1984125120',
+      },
+      {
+        id: 'midia-feedback',
+        title: 'Formulário de Feedback',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSejna3J989_DUDwvXOnS1nOYe7PnSRS3CI_4FRIzcyaDy7qWA/viewform',
+      },
+      {
+        id: 'midia-alteracao-campanha',
+        title: 'Solicitação de Alteração de Campanha',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLScTwSUwyVE4Rvn5EEvEN5VnU7muZHLcn9N09ywrjeJHm98kzA/viewform',
+      },
+      {
+        id: 'midia-criativos',
+        title: 'Criativos',
+        description: 'Mídia Compartilhada',
+        href: 'https://drive.google.com/drive/folders/1LcuhAMDepDLf2qASl94uxrSDeh_MKREh?usp=sharing',
       },
     ],
   },
@@ -269,12 +261,22 @@ export const sectors: readonly Sector[] = [
   },
 
   {
-    slug: 'controladoria',
-    name: 'Controladoria',
-    status: 'coming-soon',
-    // DT-001: aguardando o link do aplicativo OnFly.
-    tagline: 'Em breve',
-    links: [],
+    slug: 'ti',
+    name: 'TI',
+    status: 'active',
+    tagline: 'Dashboards e suporte técnico',
+    links: [
+      {
+        id: 'dashboard-comercial',
+        title: 'Dashboard Comercial',
+        href: 'https://dashboard-bondmann-production.up.railway.app/',
+      },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+    ],
   },
 ];
 

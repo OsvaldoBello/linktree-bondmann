@@ -15,6 +15,12 @@ describe('registry de setores', () => {
     expect(sectors.flatMap((sector) => sector.links)).toHaveLength(30);
   });
 
+  it('está em ordem alfabética por nome (pt-BR) — é a ordem exibida na home', () => {
+    const names = sectors.map((sector) => sector.name);
+    const ordered = [...names].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    expect(names).toEqual(ordered);
+  });
+
   it('tem slug único por setor', () => {
     const slugs = sectors.map((sector) => sector.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
