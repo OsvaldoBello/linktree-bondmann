@@ -10,6 +10,7 @@
         "onlyCategories": ["performance", "accessibility", "best-practices"],
         "formFactor": "mobile",
         "throttlingMethod": "simulate",
+        "chromeFlags": ["--no-sandbox", "--disable-dev-shm-usage"],
         "screenEmulation": {
           "mobile": true,
           "width": 375,
