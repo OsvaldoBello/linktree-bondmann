@@ -16,12 +16,19 @@ import type { NextConfig } from 'next';
  * usuário vire HTML (o registry é validado em build, não em runtime), então
  * não existe injeção para essa política habilitar. Nenhuma outra diretiva
  * usa `unsafe-inline`.
+ *
+ * `unsafe-eval` entra em `script-src` **só em desenvolvimento**
+ * (`npm run dev`): o React DevTools/Turbopack usa `eval()` para reconstruir
+ * call stacks legíveis em modo dev, e a CSP estrita bloqueava isso,
+ * poluindo o console com o aviso "eval() is not supported". Nunca sai no
+ * build de produção — é o `next build` que o CI e a Vercel servem.
  */
+const isDev = process.env.NODE_ENV !== 'production';
+
 const securityHeaders = [
   {
     key: 'Content-Security-Policy',
-    value:
-      "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    value: `default-src 'none'; script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`,
   },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },

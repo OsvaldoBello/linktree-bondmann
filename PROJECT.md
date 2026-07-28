@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 12:10 UTC | `6bff187` | `feat/f2-registry-links` |
+| 2026-07-28 12:20 UTC | `cda9711` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -208,6 +208,7 @@ next.config.ts                ← cabeçalhos de segurança
 src/
   app/
     layout.tsx                ← shell, fontes, metadata noindex
+    icon.svg                  ← favicon (símbolo oficial, verde sólido — convenção App Router)
     page.tsx                  ← home: grade de setores
     setor/[slug]/page.tsx     ← tela de setor (estática)
     not-found.tsx
@@ -215,7 +216,7 @@ src/
     links.ts                  ← REGISTRY: fonte única de verdade
   lib/
     links-schema.ts           ← Zod + allowlist + denylist
-    contrast.ts                ← cálculo de contraste WCAG
+    contrast.ts               ← cálculo de contraste WCAG
   components/
     Logo.tsx                  ← safe-area e tamanho mínimo do manual
     PatternBackground.tsx
@@ -679,6 +680,13 @@ O número de 90 KB não tinha como ser cumprido sem abrir mão de algo que o pro
 
 `npm run bench` (`scripts/bench.mjs`) builda, roda `size-limit` e depois `lhci autorun`, e falha (`exit 1`) se qualquer checagem estourar — é o que torna o job `bench` do CI real em vez do placeholder que a F0.5 deixou (`--if-present`, [DT-011](#12-débito-técnico)). Ver [DT-015](#12-débito-técnico) sobre a parte do Lighthouse não ter sido validada localmente.
 
+### ADR-018 — `unsafe-eval` em `script-src` só em desenvolvimento
+**Data:** 2026-07-28 · **Status:** aceito
+
+A CSP estrita do §7 (`script-src 'self' 'unsafe-inline'`, sem `unsafe-eval`) vale para toda rota via `next.config.ts`, inclusive `npm run dev`. Isso nunca tinha sido notado porque o Next 16 passou a encaminhar erros de console do navegador para o terminal do `next dev` — e o erro sempre existiu: o React em modo dev usa `eval()` para reconstruir call stacks legíveis (DevTools, overlay de erro), e o navegador bloqueia por causa da CSP, poluindo o terminal com "eval() is not supported in this environment" a cada requisição.
+
+`next.config.ts` agora acrescenta `'unsafe-eval'` a `script-src` só quando `process.env.NODE_ENV !== 'production'`. O `next build` que o CI e a Vercel servem nunca inclui essa exceção — `headers()` roda de novo em build de produção com `NODE_ENV=production`, então o texto do §7 continua descrevendo exatamente o que vai ao ar. Risco real é zero: `unsafe-eval` nunca chega à CSP servida em produção.
+
 ---
 
 ## 12. Débito técnico
@@ -689,7 +697,7 @@ O número de 90 KB não tinha como ser cumprido sem abrir mão de algo que o pro
 | ~~DT-002~~ | ~~Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha*~~ | — | **Resolvido em 2026-07-27.** Os dois formulários foram abertos na F2: `1FAIpQLSejna3J9...` é "Feedback BD - Campanhas Regionais Conversão" (confirma `midia-feedback`); `1FAIpQLScTwSUw...` é "BD - Campanhas Regionais - Novos Produtos ou Cidades" (confirma `midia-alteracao-campanha`). O mapeamento por ordem de envio já estava correto |
 | DT-003 | Licença webfont da família Info | P3 | Substituiria a Fira Sans, alinhando 100% ao manual |
 | DT-004 | Estabilidade dos links SharePoint com token `?e=…` | P2 | Podem expirar; mitigado pelo link health check da F7 |
-| DT-005 | Domínio definitivo na Vercel | P1 | Necessário antes da F6 |
+| ~~DT-005~~ | ~~Domínio definitivo na Vercel~~ | — | **Resolvido em 2026-07-28.** Decisão do usuário: usar o subdomínio gratuito `*.vercel.app` em vez de comprar um domínio próprio — sem custo, ativo assim que o deploy existir. Reavaliar se a Bondmann quiser um domínio institucional próprio depois; a troca não perde histórico de deploy |
 | DT-006 | `brace-expansion` vulnerável na árvore de dev | P2 | DoS por expansão ilimitada, corrigido só na `5.0.8`, cujo export quebra o `minimatch` do ESLint. Chega via `eslint-config-next → eslint-plugin-import/jsx-a11y/react`. É dependência de lint: o padrão de glob vem da nossa própria config, não de entrada hostil, e nada disso entra no bundle. Remover o `--omit=dev` do passo bloqueante assim que o `eslint-config-next` subir para `minimatch@10+`. Ver [ADR-007](#adr-007--overrides-de-postcss-e-sharp-política-de-npm-audit) |
 | DT-007 | ESLint preso na linha 9 e TypeScript na linha 5 | P3 | Bloqueado por `eslint-plugin-react` (API do ESLint 10) e `typescript-eslint` (peer `<6.1.0`). Revisar a cada bump do `eslint-config-next`. Ver [ADR-008](#adr-008--eslint-fixado-na-linha-9-e-typescript-na-linha-5) |
 | DT-008 | Navegadores do Playwright não instalados no ambiente local | P3 | `npm run test:e2e` exige `npx playwright install --with-deps` uma vez por máquina. O CI da F0.5 faz isso no job; localmente é passo manual. As specs da F0 são smoke — o E2E de verdade começa na F3 |
@@ -711,6 +719,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `cda9711` | F5: hardening da aplicação e do pipeline |
 | 2026-07-27 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
 | 2026-07-27 | `9798cd8` | F2: registry de links — schema Zod, 7 links do RH, DT-002 resolvido |
 | 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
