@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 17:13 UTC | `95444c8` | `feat/f2-registry-links` |
+| 2026-07-28 17:30 UTC | `8fa4b5a` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -783,6 +783,48 @@ Validado: `zizmor --persona=pedantic`, offline e online (com token), roda zero a
 
 **Correção — `chromeFlags` é string, não array.** A primeira versão deste ADR configurou `chromeFlags: ["--no-sandbox", "--disable-dev-shm-usage"]` (array JSON) — e o CI continuou batendo em `No usable sandbox!` mesmo assim, com o run real confirmando que a flag nunca chegou ao Chrome. Causa: `node_modules/@lhci/cli/src/collect/node-runner.js` faz `chromeFlagsAsString = chromeFlags || ''; chromeFlagsAsString += ' --headless=new'` — um array, ao passar por essa concatenação, é coagido por `Array.prototype.toString()` (junta os elementos por **vírgula**, não espaço), virando `"--no-sandbox,--disable-dev-shm-usage --headless=new"`. O Chrome recebe isso como uma única flag inválida (com vírgula literal), não duas flags — o sandbox nunca foi desativado. Confirmado lendo o código-fonte instalado e o próprio `lighthouse/cli/cli-flags.js`, que declara `'chrome-flags': { type: 'string' }`, "espaço-delimitado" — exatamente o formato de um `--chrome-flags` de linha de comando, nunca um array JSON. Corrigido para `"chromeFlags": "--no-sandbox --disable-dev-shm-usage"` (string). Validado localmente reproduzindo a mesma lógica de concatenação do `node-runner.js` fora do Lighthouse (não dá para rodar o Chrome em si aqui — [DT-015](#12-débito-técnico)), confirmando que a string final fica `"--no-sandbox --disable-dev-shm-usage --headless=new"`, três flags corretas. A primeira execução real do `bench` no CI é quem confirma de fato — ver [DT-020](#12-débito-técnico).
 
+**Correção 2 — `upload-artifact` ignora dotfile por padrão.** `.size-limit.json` nunca chegava ao `doc-drift`: `actions/upload-artifact` tem `include-hidden-files: false` por padrão, e qualquer caminho começando com `.` é silenciosamente pulado (achado lendo o log: `"No files were found with the provided path: .size-limit.json"`, com `include-hidden-files: false` listado entre os parâmetros do passo). Corrigido acrescentando `include-hidden-files: true` ao passo de upload.
+
+Com os dois bugs corrigidos, `doc-drift` ficou verde pela primeira vez e o `bench` passou a medir de verdade — ver [ADR-023](#adr-023--orçamento-de-performance-recalibrado-contra-medição-real-numberofruns-3-permanente) para o que essa primeira medição revelou.
+
+---
+
+### ADR-023 — Orçamento de performance recalibrado contra medição real; `numberOfRuns: 3` permanente
+**Data:** 2026-07-28 · **Status:** aceito · **altera o §10**
+
+Com o `bench` finalmente rodando (ADR-022), a primeira execução real reprovou com um resultado estranho: Performance 97/98 na home, mas **80/98** em `/setor/marketing` — uma rota sem nenhum componente cliente, sem motivo óbvio para performar tão pior. Investigado antes de qualquer recalibração, por pedido do usuário.
+
+**O "80" era ruído, não um problema da rota.** `.lighthouserc.json` rodava `numberOfRuns: 1` — uma única medição por URL, em runner de CI compartilhado, é conhecidamente instável (o próprio Lighthouse CI recomenda 3+ para mediana). Subir para `numberOfRuns: 3` e comparar:
+
+| Rota | Run 1 | Run 2 | Run 3 |
+|---|---|---|---|
+| `/` | 0.99 | 0.99 | 0.99 |
+| `/setor/marketing` | 0.96 | **0.99** | 0.97 |
+
+Com a mediana, as categorias de Performance, Acessibilidade e Boas Práticas **passam** nas duas rotas — o `assert` do LHCI, que só lista falhas, confirma isso: nenhuma das três categorias aparece entre as reprovações do run recalibrado. `numberOfRuns: 3` fica **permanente**: o custo é ~1 minuto a mais de CI job, contra o risco real de reprovar um PR por acaso estatístico, como quase aconteceu aqui.
+
+**O que sobrou é real, e vem do mesmo lugar nas duas rotas.** Três métricas reprovam de forma consistente, com números praticamente idênticos em `/` e `/setor/marketing` — não é a busca da home (ADR-021) causando isso, porque `/setor/marketing` não tem `<LinkSearch>` e reprova igual:
+
+| Métrica | Orçamento antigo | Medido (mediana) | Causa, por trás do número |
+|---|---|---|---|
+| LCP | < 1200ms | ~2015–2020ms | 77% do tempo é *Render Delay* (não carregamento de recurso) — trabalho de hidratação sob a simulação de CPU limitada que o Lighthouse aplica em `formFactor: mobile`. O elemento LCP é texto puro (`<p>` do subtítulo), já com `font-display: swap`, então não é fonte bloqueando pintura |
+| Peso total | < 250 KB | 294 KB (`/`) / 268 KB (`/setor/marketing`) | Script 159 KiB + Fonte 72 KiB (4 pesos do Fira Sans) + **~35–40 KB / 18 requisições de prefetch automático do `next/link`** — o Next busca em segundo plano os dados RSC dos 7 links de setor visíveis na home, mesmo sem clique |
+| JS por rota | < 145 KB | 162.5 KB (idêntico nas duas rotas) | O runtime compartilhado do App Router (~111 KB, `ADR-017`) já citado ali como custo inevitável para hidratação e `next/link` funcionarem, mesmo sem componente cliente próprio |
+
+Isolado por investigação, não por suposição: o achado do `next/link` prefetch veio de filtrar `network-requests` do relatório JSON do Lighthouse por URLs `?_rsc=` — 18 das 34 requisições da home são prefetch de rota, confirmando que uma fração real do excesso de peso é tráfego que o usuário não pediu ainda, não conteúdo da página em si.
+
+**Decisão do usuário: recalibrar o orçamento, não investir em otimização agora.** O LCP de ~2000ms não tem correção barata — é o custo estrutural da hidratação do App Router sob a simulação do Lighthouse, o mesmo runtime que o `ADR-017` já aceitou como inevitável; reduzi-lo de verdade exigiria abrir mão de `next/link`/App Router. O prefetch automático e os 4 pesos do Fira Sans **são** otimizações viáveis e ficam registrados como [DT-021](#12-débito-técnico) para quando fizer sentido revisitar.
+
+Orçamento novo em `.lighthouserc.json`, com margem sobre o medido (não o valor exato, para não reprovar por variação normal de execução):
+
+| Métrica | Orçamento antigo | Medido | **Orçamento novo** | Margem |
+|---|---|---|---|---|
+| LCP | 1200ms | ~2020ms | **2500ms** | ~24% acima do medido |
+| Peso total | 250 KB | 294 KB (pior caso) | **320 KB** | ~9% acima do pior caso |
+| JS por rota | 145 KB | 162.5 KB | **175 KB** | ~7,6% acima do medido |
+
+Os artefatos de investigação (`.lighthouseci/*.json` publicados como artefato `lighthouse-reports`) foram removidos do `ci.yml` depois de cumprirem o papel — eram temporários por definição, e o achado já está registrado aqui.
+
 ---
 
 ## 12. Débito técnico
@@ -808,7 +850,8 @@ Validado: `zizmor --persona=pedantic`, offline e online (com token), roda zero a
 | DT-017 | **Produção deploya de uma branch de feature, não de `main`** | P1 | O projeto na Vercel é `osvaldo-s-projects3/links-bondmann`, e `links-bondmann.vercel.app` serve `feat/f2-registry-links` — não `main`, que segue no commit da F0.5 (`688e80b`), sete commits atrás. Conferido por resposta HTTP em 2026-07-28: produção já servia o build desta branch, com o favicon novo e a home redesenhada. Consequência prática: o §8 promete que "todo deploy de produção é rastreável a um commit assinado, revisado, com CI verde", e hoje isso não se sustenta — a branch de produção não é protegida, não exige revisão e nunca tinha passado pelo CI (o primeiro run foi o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5)). Corrigir apontando a *Production Branch* da Vercel de volta para `main` **depois** que o PR #5 mergear, para não deixar produção sem conteúdo no intervalo |
 | DT-018 | Custo de JS da ilha cliente medido por aproximação, não pelo orçamento que vale | P2 | `size-limit` mede só o runtime compartilhado, e ele não mudou com a busca (113 549 B *brotli*, dentro do teto de 120 000 B) — o código da ilha vai para o chunk da rota, que esse orçamento não enxerga. A aproximação local foi comparar home (127.6 KiB de JS *brotli*, sem polyfill) com a tela de setor (125.3 KiB), mesma casca sem ilha: **~2.3 KiB**. O número que o §10 realmente orça por rota (`resource-summary:script:size`, 145 KB) sai do Lighthouse, que não roda neste ambiente ([DT-015](#12-débito-técnico)) — a primeira leitura real é o job `bench` do CI neste PR. Acompanhar esse run; se apertar, recalibrar com medição, nunca com estimativa |
 | DT-019 | Pesos e limiares da busca calibrados a olho, sem dado de uso | P3 | Os números do ranking ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — pesos por campo, tolerância de digitação, dispersão máxima da subsequência, teto de 6 resultados — foram escolhidos contra os 31 links de hoje e conferidos no navegador com buscas reais ("dashbord comercial", "cotaçao"). Não há telemetria para saber o que as pessoas realmente digitam, e o §7 não permite coletá-la. Recalibrar por relato de uso, ou quando o registry crescer o bastante para que o teto de 6 comece a esconder resultado bom |
-| DT-020 | **Primeira medição real do Lighthouse reprova o orçamento do §10 — decisão pendente do usuário** | P1 | **Atualizado em 2026-07-28**, com o `bench` já rodando de verdade no CI (plumbing 100% saudável: `doc-drift` verde, artefato baixado, `verify`/`audit`/`e2e` verdes). O Chrome roda e mede — não é mais bug de configuração. Resultado real, [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5), run [30381533039](https://github.com/OsvaldoBello/linktree-bondmann/actions/runs/30381533039): Performance 97/98 na home e **80/98** em `/setor/marketing`; LCP 2129ms e 2344ms contra o teto de 1200ms; `resource-summary:script:size` 162.5 KB contra o teto de 145 KB; `total-byte-weight` 294 KB e 268 KB contra o teto de 250 KB. Todos os quatro limiares do §10 reprovam contra a linha de base real de hoje, não só um caso de borda. Duas saídas, mesma decisão que o `ADR-017` já tomou uma vez: (1) recalibrar `.lighthouserc.json` para o número real, documentando por quê (padrão do `ADR-017`); ou (2) investigar a causa do LCP alto e do bundle acima do orçamento (candidatos óbvios: fonte via `next/font`, o runtime compartilhado de 110.9 KB, `throttlingMethod: simulate` do Lighthouse) e otimizar antes de recalibrar. Não decidido aqui — é o usuário quem escolhe entre "aceitar a linha de base real" e "investir em performance" |
+| ~~DT-020~~ | ~~Primeira medição real do Lighthouse reprova o orçamento do §10~~ | — | **Resolvido em 2026-07-28.** Investigado a pedido do usuário antes de decidir: o "80/98" de `/setor/marketing` era ruído de execução única em runner compartilhado (`numberOfRuns: 1`), não um problema real da rota — com mediana de 3 execuções as categorias de score passam nas duas rotas. LCP, peso total e JS por rota continuam reprovando de forma real e consistente, mesma causa nas duas rotas (custo estrutural de hidratação do App Router, não a busca da F6). Orçamento recalibrado contra a medição real. Ver [ADR-023](#adr-023--orçamento-de-performance-recalibrado-contra-medição-real-numberofruns-3-permanente) |
+| DT-021 | Duas otimizações reais de performance identificadas, não aplicadas | P2 | A investigação da [ADR-023](#adr-023--orçamento-de-performance-recalibrado-contra-medição-real-numberofruns-3-permanente) achou dois candidatos concretos, não aplicados porque o usuário optou por recalibrar o orçamento em vez de investir em otimização agora: (1) `next/link` prefetch automático dos 7 `<SectorCard>` da home soma ~35–40 KB / 18 requisições de tráfego que o usuário não pediu ainda — desativável via `prefetch={false}`, com a contrapartida de perder a navegação instantânea; (2) Fira Sans carrega 4 pesos (400/500/600/700, ~72 KiB) — vale conferir quais pesos o design realmente usa antes de cortar. Nenhum dos dois altera o LCP estrutural (custo de hidratação do App Router), mas reduziriam o peso total e o tempo de script de forma mensurável. Revisitar se o orçamento apertar de novo ou se performance virar prioridade |
 
 ---
 
@@ -819,6 +862,8 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `8fa4b5a` | investigação DT-020: 3 execuções do Lighthouse (mediana) + upload dos relatórios |
+| 2026-07-28 | `61b1ee4` | docs: registrar a primeira medição real do bench — CI são, orçamento não |
 | 2026-07-28 | `95444c8` | fix: upload-artifact ignora .size-limit.json por ser dotfile |
 | 2026-07-28 | `42c8168` | fix: chromeFlags do Lighthouse CI precisa ser string, não array |
 | 2026-07-28 | `73d39b0` | fix: bench e doc-drift falhavam em todo push — sandbox do Chrome e artefato ausente |
