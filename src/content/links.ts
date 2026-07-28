@@ -47,13 +47,27 @@ export interface Sector {
  */
 const PORTAL_DE_CHAMADOS = 'https://portal-chamados-bondmann-production.up.railway.app/workspace';
 
+/**
+ * Mesmo caso do Portal de Chamados: o Dashboard Comercial é mantido pela TI,
+ * mas quem o consome no dia-a-dia é o Comercial. Aparece nos dois setores, com
+ * a mesma URL — quem procura o dashboard não deveria precisar saber de quem é
+ * a infraestrutura por trás dele.
+ */
+const DASHBOARD_COMERCIAL = 'https://dashboard-bondmann-production.up.railway.app/';
+
 export const sectors: readonly Sector[] = [
   {
     slug: 'comercial',
     name: 'Comercial',
     status: 'active',
-    tagline: 'Cotações, cadastros e formulários de campo',
+    tagline: 'Dashboard, cotações, cadastros e formulários de campo',
     links: [
+      {
+        id: 'dashboard-comercial',
+        title: 'Dashboard Comercial',
+        description: 'Indicadores de vendas',
+        href: DASHBOARD_COMERCIAL,
+      },
       {
         id: 'cotacao-pj',
         title: 'Solicitação de Cotação PJ',
@@ -269,7 +283,7 @@ export const sectors: readonly Sector[] = [
       {
         id: 'dashboard-comercial',
         title: 'Dashboard Comercial',
-        href: 'https://dashboard-bondmann-production.up.railway.app/',
+        href: DASHBOARD_COMERCIAL,
       },
       {
         id: 'portal-chamados',

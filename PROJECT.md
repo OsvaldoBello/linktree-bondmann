@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 14:02 UTC | `a5c3a77` | `feat/f2-registry-links` |
+| 2026-07-28 16:49 UTC | `febf9ce` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -46,14 +46,14 @@ Um agregador de links próprio da Bondmann — no espírito do Linktree — com 
 
 ### Escopo
 
-**Dentro:** site estático, público mas não indexável, hospedado na Vercel. Navegação em dois níveis (home → setor). Conteúdo versionado no repositório.
+**Dentro:** site estático, público mas não indexável, hospedado na Vercel. Navegação em dois níveis (home → setor). Busca na home, client-side, sobre o registry já embutido na página ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)). Conteúdo versionado no repositório.
 
-**Fora (não construir sem nova decisão registrada aqui):** autenticação, painel administrativo, banco de dados, API, busca, favoritos, cookies, qualquer coleta de dado pessoal.
+**Fora (não construir sem nova decisão registrada aqui):** autenticação, painel administrativo, banco de dados, API, favoritos, cookies, qualquer coleta de dado pessoal.
 
 <!-- AUTO:overview:start -->
 | Setores | Setores ativos | Links | Domínios distintos |
 |---|---|---|---|
-| 7 | 6 | 30 | 8 |
+| 7 | 6 | 31 | 8 |
 <!-- AUTO:overview:end -->
 
 ### Princípios de design do projeto
@@ -218,12 +218,14 @@ src/
   lib/
     links-schema.ts           ← Zod + allowlist + denylist
     contrast.ts               ← cálculo de contraste WCAG
+    search.ts                 ← ranking da busca (puro, sem dependência)
   components/
     Logo.tsx                  ← safe-area e tamanho mínimo do manual
     PatternBackground.tsx
     PageShell.tsx
     SectorCard.tsx
     LinkButton.tsx            ← rel seguro obrigatório
+    LinkSearch.tsx            ← ÚNICA ilha cliente ('use client') — ADR-021
   styles/tokens.css           ← tokens do manual
 e2e/                          ← specs do Playwright
 public/brand/                 ← logo.svg
@@ -234,9 +236,11 @@ public/favicon.ico            ← fallback do favicon, gerado e commitado (ADR-0
 
 `links.ts` → validado por `links-schema.ts` em build → consumido por `page.tsx` (home) e `setor/[slug]/page.tsx` via `generateStaticParams`. Tudo pré-renderizado; nenhuma requisição em runtime.
 
+A busca não muda esse fluxo: `<LinkSearch>` recebe o mesmo `sectors` por prop, já validado em build, e filtra em memória no navegador com `lib/search.ts`. Continua sem requisição em runtime — o índice é a própria página ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)).
+
 ### Convenções
 
-- Componentes são Server Components por padrão. `'use client'` exige justificativa em comentário.
+- Componentes são Server Components por padrão. `'use client'` exige justificativa em comentário. Hoje há **uma** ilha cliente no projeto (`<LinkSearch>`); a lista de setores continua renderizada no servidor e entra nela como `children`.
 - Slugs de setor são gerados no registry e imutáveis — mudá-los quebra links compartilhados. Renomear exige entrada no ADR e um redirect.
 - A ordem do array `sectors` é a ordem exibida na home, e é **alfabética por nome** (`localeCompare` pt-BR) — travada por teste em `src/content/links.test.ts`. Ver [ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport).
 - Nenhum componente recebe URL por prop arbitrária; sempre um objeto `Link` já validado.
@@ -282,7 +286,7 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes. ✅ **concluída em 2026-07-27** — `src/lib/contrast.ts` reproduz a fórmula WCAG 2.2 e trava os pares do §2 (navy/branco, branco/navy e navy/verde passam AA; verde/branco reprova, ≈2.0:1, pinado por teste); `src/components/` (Logo, PatternBackground, PageShell, SectorCard, LinkButton) com 100% de cobertura, acima do piso de 90%. `<Logo>` não expõe `className`/`style` — safe-area e tamanho mínimo do manual não são sobrescrevíveis por prop, só por union fechado (`color`/`size`) com fallback seguro para valor hostil. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
 
 ### F2 — Registry de links
-- [x] `src/content/links.ts` com os 7 setores e 30 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27)
+- [x] `src/content/links.ts` com os 7 setores e 31 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27; Dashboard Comercial adicionado ao Comercial em 2026-07-28)
 - [x] `links-schema.ts`: HTTPS obrigatório, allowlist de domínios, denylist de encurtadores, slug único
 - [x] `npm run validate:links`
 - [x] Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* ([DT-002](#12-débito-técnico))
@@ -294,6 +298,8 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 - [x] Estado "Em breve" para Controladoria (não focável como link)
 
 **Gate:** E2E confirma 7 cards, 1 desabilitado. ✅ **concluída em 2026-07-27**, redesenhada em 2026-07-27 — `src/app/page.tsx` deixou de ser o placeholder da F0 ([DT-009](#12-débito-técnico) resolvido): agora usa `<PageShell>` e renderiza `<SectorCard>` para os 7 setores. A grade `grid-cols-1 sm:grid-cols-2` original foi substituída por uma lista vertical de coluna única (mesmo padrão em todas as larguras de tela) no redesenho visual — ver ADR-014. RH virou setor ativo na F2, então só Controladoria segue "em breve" — o item do cronograma e o gate foram atualizados para refletir isso (o texto original, escrito antes da F2, ainda citava RH). `e2e/navigation.spec.ts` deriva as contagens de ativos/"em breve" direto de `sectors`, então o teste não fica desatualizado se um setor mudar de estado.
+
+Em 2026-07-28 a home ganhou um **campo de busca** acima da lista, a pedido do usuário: com a busca vazia a tela é exatamente a descrita acima; com busca, a lista de setores dá lugar aos links mais próximos, de qualquer setor. Mudança de escopo — ver [ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo).
 
 ### F4 — Telas de setor
 - [x] Rota estática `/setor/[slug]` via `generateStaticParams`
@@ -314,7 +320,7 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 - [ ] Projeto na Vercel, domínio, preview protegido por PR
 - [ ] Runbook de rollback validado na prática
 
-**Gate:** produção no ar, os 30 links conferidos manualmente.
+**Gate:** produção no ar, os 31 links conferidos manualmente.
 
 O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-bondmann.vercel.app` está no ar — mas servindo `feat/f2-registry-links`, não `main`. Fechar esta fase é mergear o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5) e devolver a *Production Branch* para `main`, nessa ordem — ver [DT-017](#12-débito-técnico).
 
@@ -328,13 +334,14 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 30 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 31 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27 e o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
-### Comercial — 12 links
+### Comercial — 13 links
 | Título | Destino |
 |---|---|
+| Dashboard Comercial | `dashboard-bondmann-production.up.railway.app` |
 | Solicitação de Cotação PJ | Ploomes |
 | Solicitação de Cotação PF | Ploomes |
 | Solicitação de Rastreio | Ploomes |
@@ -388,6 +395,17 @@ Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)
 |---|---|
 | Dashboard Comercial | `dashboard-bondmann-production.up.railway.app` |
 | Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
+
+### Links divulgados por mais de um setor
+
+Duas URLs aparecem em dois setores de propósito — não é duplicação acidental:
+
+| Link | Setores | Motivo |
+|---|---|---|
+| Portal de Chamados | Marketing, TI | Cada setor o divulga como porta de entrada própria |
+| Dashboard Comercial | Comercial, TI | Mantido pela TI, consumido pelo Comercial — quem procura não deveria precisar saber de quem é a infraestrutura |
+
+A URL é uma constante única em `links.ts` nos dois casos, e `links.test.ts` falha se o mesmo `id` aparecer com URLs diferentes entre setores: o risco real é atualizar uma cópia e esquecer a outra. Na busca da home, o link cross-listado aparece **uma vez só**, no setor de maior pontuação ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)).
 
 ### Setores removidos do escopo
 **Financeiro** e **Produção** não constam da v1 — não possuíam links e não há previsão. Reintroduzir exige apenas adicioná-los ao registry.
@@ -522,10 +540,14 @@ Estes existem porque a regra correspondente é fácil de violar sem perceber:
 - Todo link do registry produz `rel="noopener noreferrer nofollow"`
 - Todo par de cores usado na interface satisfaz WCAG AA
 - `<Logo>` respeita safe-area e tamanho mínimo mesmo com props hostis
+- Link cross-listado (§6) tem a mesma URL em todos os setores em que aparece
+- A busca ordena casamento exato antes de aproximado, e não devolve entrada em que algum token da query não casou ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo))
 
 ### E2E (Playwright)
 
-Chromium + WebKit, viewport mobile e desktop: home lista os 7 setores; RH e Controladoria não navegáveis; setor exibe os links corretos; slug inválido cai em 404; percurso completo por teclado com foco visível.
+Chromium + WebKit, viewport mobile e desktop: home lista os 7 setores; Controladoria não navegável; setor exibe os links corretos; slug inválido cai em 404; percurso completo por teclado com foco visível.
+
+A busca tem suíte própria (`Busca na home`): acha link de qualquer setor com `rel` seguro, tolera acento e erro de digitação, avisa quando nada casa, e limpar devolve a lista de setores. Como é a única parte do site que depende de hidratação, o helper `search()` repete o preenchimento até o botão "Limpar busca" aparecer — digitar antes da hidratação perderia o evento, e o teste falharia por corrida, não por defeito.
 
 ---
 
@@ -717,7 +739,28 @@ O favicon anterior era o símbolo em verde sólido, sem fundo, no viewBox origin
 
 Confirmado em produção (`links-bondmann.vercel.app`) em 2026-07-28: `/icon.svg` serve o canvas 512×512 com a placa navy e `/favicon.ico` responde 200 em `image/vnd.microsoft.icon`. Vale registrar por que a correção anterior (`5ad331b`, símbolo verde sem fundo) não resolveu apesar de estar no ar: o ícone carregava, mas era invisível no tamanho em que a guia o desenha — o diagnóstico inicial de "não está no ar" estava errado, e o que estava errado era a arte. Ver [DT-017](#12-débito-técnico).
 
----
+### ADR-021 — Busca client-side na home entra no escopo
+**Data:** 2026-07-28 · **Status:** aceito · **altera o §1**
+
+O §1 listava "busca" entre o que **não** construir sem uma decisão registrada aqui. Esta é a decisão: o usuário pediu um campo de busca na home que ache "o link mais perto" do que foi digitado. O motivo do veto original era custo — busca costuma significar índice, backend ou biblioteca. Nenhum dos três é necessário com 31 links:
+
+- **Sem dependência nova.** `src/lib/search.ts` é código próprio, funções puras, com 100% de cobertura. A alternativa seria Fuse.js ou MiniSearch (~10 KB *gzip* cada) para um corpus que cabe numa tela — não passa no teste do §3 ("toda biblioteca nova exige justificar bundle e superfície de ataque").
+- **Sem backend e sem requisição.** O registry já vai embutido na página; a busca filtra o que já está em memória. O §4 ("tudo pré-renderizado, nenhuma requisição em runtime") continua verdadeiro — `npm run build` segue gerando as 11 rotas estáticas.
+- **Sem estado persistido.** Nada de cookie, `localStorage` ou histórico de busca. A query vive no estado do React e morre com a aba, o que mantém o §7 (privacidade) intacto. Também não vai para a URL: `?q=` viraria termo de busca em log de servidor e em link compartilhado, e o §7 escolheu `Referrer-Policy: no-referrer` justamente para não vazar navegação.
+
+**Custo aceito: a primeira ilha cliente do projeto.** Filtrar a cada tecla exige estado no navegador. As saídas sem `'use client'` seriam uma rota `/busca?q=` renderizada por requisição (contra o §4 e contra o orçamento de LCP do §10) ou submissão de formulário — que a CSP do §7 bloqueia com `form-action 'none'`. `<LinkSearch>` é a ilha, e é pequena: recebe `sectors` por prop e a lista de setores como `children` já renderizada no servidor, então o custo é o do componente, não o da lista.
+
+**Medido, não estimado.** O runtime compartilhado do §10 **não mudou**: 113 549 bytes *brotli* (110.9 KiB), o mesmo valor de antes da busca — o código da ilha entra no chunk da própria rota, não em `rootMainFiles`. O custo marginal aparece comparando as duas telas do mesmo build: a home carrega 127.6 KiB de JS *brotli* (fora o bundle de polyfill, que navegador com `type="module"` não baixa) contra 125.3 KiB da tela de setor, que tem a mesma casca sem a ilha — **~2.3 KiB**. O que ainda não foi medido de verdade é o número que o Lighthouse audita na rota (`resource-summary:script:size`, 145 KB), preso na [DT-015](#12-débito-técnico); ver [DT-018](#12-débito-técnico).
+
+**Heurística do ranking.** Por token da busca, do mais forte para o mais fraco: palavra idêntica (1.0) > começa com (0.9) > contém (0.7) > erro de digitação por distância de Levenshtein (0.55) > subsequência compacta (0.4). O casamento é procurado no título (peso 1), na descrição (0.75) e no nome do setor (0.6) — é o que faz "fb029" achar o MVV e "ti" achar os links da TI. Três decisões que valem registro:
+
+1. **Todo token precisa casar em algum campo**, senão a entrada sai. Sem isso, "cotacao xyz" traria as cotações como se `xyz` não tivesse sido digitado — o oposto de "o link mais perto".
+2. **Subsequência limitada a 2× o tamanho do token.** Sem esse limite, "cotacao" casava com "Solicitação de Alteração de Campanha" (as letras existem, espalhadas por 20 caracteres) — acaso virando resultado. Com ele, "dshbrd" continua achando "Dashboard Comercial". Calibrado observando o resultado real no navegador, não no papel.
+3. **Empate desempatado pela ordem do registry**, e link cross-listado aparece uma vez só (o de maior pontuação): a mesma URL repetida no resultado se lê como defeito.
+
+Nenhum desses números vem de dado de uso — ver [DT-019](#12-débito-técnico). A alternativa de campo aberto (mostrar tudo, ordenado por proximidade, sem corte) foi descartada: com 31 links, uma lista que nunca encurta não é busca, é a home com outra ordem.
+
+**Acessibilidade e contraste.** Campo com `<label>` (visualmente oculto, não só `placeholder`), região `role="search"`, `role="status"` narrando a contagem de resultados, botão "Limpar busca" com nome acessível. Texto navy cheio sobre o card branco, inclusive o `placeholder` — a lição da F4 (`text-bond-navy/70` reprovava AA) vale para `placeholder:` também. Nenhum atributo `style` inline, para não precisar de `unsafe-inline` em `style-src` (§7). `e2e/navigation.spec.ts` roda axe na home **com resultados na tela**, não só no estado inicial.
 
 ## 12. Débito técnico
 
@@ -740,6 +783,8 @@ Confirmado em produção (`links-bondmann.vercel.app`) em 2026-07-28: `/icon.svg
 | DT-015 | Lighthouse CI não validado localmente — só `size-limit` | P1 | `npx lhci autorun` falha neste ambiente com `spawn UNKNOWN` ao tentar abrir o Chromium do Playwright (mesmo binário, mesmo comando, falha idêntica no Git Bash e no PowerShell) — sandbox de execução deste ambiente parece bloquear o spawn direto de um processo de navegador fora da ferramenta de browser já provisionada. `size-limit` roda e passa normalmente (não depende de navegador). `.lighthouserc.json` e os limiares do §10 estão configurados e corretos por inspeção, mas nunca produziram um relatório real — a primeira validação de verdade é o job `bench` no GitHub Actions, mesmo padrão do [ADR-011](#adr-011--doccheck-ignora-updated-e-changelog-na-comparação) (bugs só visíveis na primeira execução real). Como `bench` é check obrigatório em `main` (§8), o primeiro PR que carregar essa mudança pode falhar por limiar mal calibrado (não por erro de configuração) — acompanhar essa execução e ajustar `.lighthouserc.json` se necessário antes de exigir o check |
 | DT-016 | Gate da F5 depende de um deploy que ainda não existe | P1 | `securityheaders.com` só audita uma URL pública — não há uma até a F6 terminar. O gate da F5 foi fechado com essa checagem pendente; roda-la contra o domínio de produção assim que a F6 concluir e registrar o resultado (nota ou achado) na entrada da F5 |
 | DT-017 | **Produção deploya de uma branch de feature, não de `main`** | P1 | O projeto na Vercel é `osvaldo-s-projects3/links-bondmann`, e `links-bondmann.vercel.app` serve `feat/f2-registry-links` — não `main`, que segue no commit da F0.5 (`688e80b`), sete commits atrás. Conferido por resposta HTTP em 2026-07-28: produção já servia o build desta branch, com o favicon novo e a home redesenhada. Consequência prática: o §8 promete que "todo deploy de produção é rastreável a um commit assinado, revisado, com CI verde", e hoje isso não se sustenta — a branch de produção não é protegida, não exige revisão e nunca tinha passado pelo CI (o primeiro run foi o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5)). Corrigir apontando a *Production Branch* da Vercel de volta para `main` **depois** que o PR #5 mergear, para não deixar produção sem conteúdo no intervalo |
+| DT-018 | Custo de JS da ilha cliente medido por aproximação, não pelo orçamento que vale | P2 | `size-limit` mede só o runtime compartilhado, e ele não mudou com a busca (113 549 B *brotli*, dentro do teto de 120 000 B) — o código da ilha vai para o chunk da rota, que esse orçamento não enxerga. A aproximação local foi comparar home (127.6 KiB de JS *brotli*, sem polyfill) com a tela de setor (125.3 KiB), mesma casca sem ilha: **~2.3 KiB**. O número que o §10 realmente orça por rota (`resource-summary:script:size`, 145 KB) sai do Lighthouse, que não roda neste ambiente ([DT-015](#12-débito-técnico)) — a primeira leitura real é o job `bench` do CI neste PR. Acompanhar esse run; se apertar, recalibrar com medição, nunca com estimativa |
+| DT-019 | Pesos e limiares da busca calibrados a olho, sem dado de uso | P3 | Os números do ranking ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — pesos por campo, tolerância de digitação, dispersão máxima da subsequência, teto de 6 resultados — foram escolhidos contra os 31 links de hoje e conferidos no navegador com buscas reais ("dashbord comercial", "cotaçao"). Não há telemetria para saber o que as pessoas realmente digitam, e o §7 não permite coletá-la. Recalibrar por relato de uso, ou quando o registry crescer o bastante para que o teto de 6 comece a esconder resultado bom |
 
 ---
 
@@ -750,6 +795,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `febf9ce` | docs: corrigir o DT-017 — produção deploya desta branch, não de main |
 | 2026-07-28 | `a5c3a77` | ajustes de home: texto, ordem alfabética, fundo fixo e favicon legível |
 | 2026-07-28 | `5ad331b` | favicon verde + unsafe-eval na CSP só em desenvolvimento |
 | 2026-07-28 | `cda9711` | F5: hardening da aplicação e do pipeline |
@@ -784,6 +830,8 @@ Para quem só quer **ver o site rodando** — revisar um link, conferir um texto
 
 O script confere se o Node está no PATH, instala as dependências com `npm ci --ignore-scripts` quando falta `node_modules`, e avisa se a porta 3000 já está ocupada. **Não substitui `npm run verify`**, que é o que o CI roda: serve para olhar, não para aprovar.
 
+**Se uma tela parar de reagir a clique/digitação sem erro nenhum no console:** reinicie o `dev.bat` em vez de confiar no hot reload. Observado ao vivo em 2026-07-28, com a busca da home ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)): o HTML novo carregava (campo visível), mas nada respondia — a aba tinha sido aberta antes de `<LinkSearch>` (primeira `'use client'` do projeto) existir, e o Fast Refresh do Turbopack não republica de forma confiável a referência de hidratação quando um Server Component passa a importar um Client Component novo no meio da sessão. Fechar e reabrir o `dev.bat` resolveu. Não é bug do componente — é uma limitação conhecida do Fast Refresh nessa fronteira; um `Ctrl+Shift+R` na aba não basta, porque o problema está no servidor de dev, não no cache do navegador.
+
 ### Verificação completa antes de abrir PR
 
 ```bash
@@ -795,6 +843,8 @@ Agrega typecheck, lint, `validate:links`, testes unitários com cobertura e buil
 ```bash
 npm run test:e2e
 ```
+
+**Feche o `dev.bat` antes.** `playwright.config.ts` tem `reuseExistingServer` fora do CI: com o `next dev` ocupando a 3000, o E2E testa o servidor de desenvolvimento em vez do build de produção que ele deveria auditar. E aí a suíte da busca falha por um motivo que não existe em produção — em `dev`, o cliente de HMR não conecta quando a URL é `127.0.0.1` (o navegador do Playwright) em vez de `localhost`, e sem ele a hidratação não termina, então o campo aceita texto e nada acontece. Contra `npm run start` os 17 testes passam.
 
 Exige os navegadores do Playwright — uma vez por máquina ([DT-008](#12-débito-técnico)):
 

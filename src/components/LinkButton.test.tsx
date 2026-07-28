@@ -34,6 +34,23 @@ describe('<LinkButton>', () => {
     expect(screen.queryByText('Contexto')).not.toBeInTheDocument();
   });
 
+  it('exibe o setor de origem quando a busca pede contexto', () => {
+    render(
+      <LinkButton
+        link={{ id: 'x', title: 'Portal', href: 'https://example.com/' }}
+        sectorName="TI"
+      />,
+    );
+    const link = screen.getByRole('link');
+    expect(link).toHaveTextContent('TI');
+    expect(link).toHaveTextContent('Portal');
+  });
+
+  it('omite o setor de origem fora da busca — na tela de setor seria ruído', () => {
+    render(<LinkButton link={{ id: 'x', title: 'Portal', href: 'https://example.com/' }} />);
+    expect(screen.getByRole('link', { name: 'Portal' })).toBeInTheDocument();
+  });
+
   it('§7: todo link do registry real produz rel seguro — travado por teste, não por revisão', () => {
     const allLinks = sectors.flatMap((sector) => sector.links);
     expect(allLinks.length).toBeGreaterThan(0);
