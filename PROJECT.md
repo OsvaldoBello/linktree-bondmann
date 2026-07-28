@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-27 17:56 UTC | `9c181ff` | `feat/f2-registry-links` |
+| 2026-07-28 12:00 UTC | `9798cd8` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -90,6 +90,9 @@ O manual converte o Pantone 367 C para `#ACC76B`, mas o arquivo vetorial oficial
 | Textura de fundo em baixa opacidade | ✅ |
 | **Texto sobre fundo claro** | ❌ **proibido** |
 | Texto navy sobre fundo verde (≈ 5.2:1) | ✅ |
+| Texto verde sobre fundo navy (≈ 5.2:1, mesmo par, ordem invertida — ver [ADR-015](#adr-015--fundo-navy-texto-verde-e-tipografia-sem-itálico)) | ✅ |
+
+A regra continua sendo sobre **fundo claro**: desde o redesenho da ADR-015 o fundo da página é navy (escuro), e é nesse fundo que o texto e o logo aparecem em verde. Dentro dos cards — que continuam brancos — o texto continua navy; verde nunca é cor de texto ali.
 
 Garantido por teste automatizado em `src/lib/contrast.test.ts` — qualquer par token/token usado na interface é verificado contra WCAG AA.
 
@@ -107,7 +110,9 @@ Regras do manual traduzidas em código:
 
 O manual (pág. 3) especifica **Info Book Italic** para títulos e textos principais, e **Info Text / Info Display Book Italic** para subtítulos e textos secundários. A família Info é comercial e não possui webfont livre.
 
-**Substituta adotada: Fira Sans** — projetada por Erik Spiekermann, o mesmo designer da família Info, gratuita e com itálico completo. É o proxy mais fiel disponível. Títulos de setor usam itálico, preservando a personalidade especificada. Ver [ADR-002](#adr-002--fira-sans-como-proxy-da-família-info).
+**Substituta adotada: Fira Sans** — projetada por Erik Spiekermann, o mesmo designer da família Info, gratuita e com itálico completo. É o proxy mais fiel disponível. Ver [ADR-002](#adr-002--fira-sans-como-proxy-da-família-info).
+
+O itálico do manual (Info Book Italic) foi usado nos títulos até o redesenho da F3/F4, mas foi **removido** no redesenho de 2026-07-27 em favor de uma tipografia mais simples — só o estilo `normal` é carregado agora. Ver [ADR-015](#adr-015--fundo-navy-texto-verde-e-tipografia-sem-itálico).
 
 Servida via `next/font` com self-hosting — nenhuma requisição ao Google em runtime.
 
@@ -206,7 +211,7 @@ src/
     links.ts                  ← REGISTRY: fonte única de verdade
   lib/
     links-schema.ts           ← Zod + allowlist + denylist
-    contrast.ts               ← cálculo de contraste WCAG
+    contrast.ts                ← cálculo de contraste WCAG
   components/
     Logo.tsx                  ← safe-area e tamanho mínimo do manual
     PatternBackground.tsx
@@ -235,7 +240,7 @@ public/brand/                  ← logo.svg, favicons
 Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fase não fecha sem ele.
 
 <!-- AUTO:progress:start -->
-`█████████████░░░░░░░` **67%** — 22 de 33 itens concluídos
+`████████████████░░░░` **79%** — 26 de 33 itens concluídos
 <!-- AUTO:progress:end -->
 
 ### F0 — Fundação
@@ -277,16 +282,18 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** build falha com URL `http://`, domínio fora da allowlist ou slug duplicado. ✅ **concluída em 2026-07-27** — `src/lib/links-schema.ts` (Zod) valida a cada import de `sectors` (build, testes e `npm run validate:links` standalone), travando protocolo, allowlist, denylist e slug/id únicos; 10 testes cobrindo cada regra de rejeição. Setores ativos: 6 de 7 (só Controladoria segue "em breve" — [DT-001](#12-débito-técnico)). Novo domínio `forms.cloud.microsoft` (formulários RH) entrou na allowlist.
 
 ### F3 — Home de setores
-- [ ] Grade responsiva mobile-first com os 7 setores
-- [ ] Estado "Em breve" para RH e Controladoria (não focável como link)
+- [x] Lista vertical responsiva mobile-first com os 7 setores (padrão Linktree — ver [ADR-014](#adr-014--redesenho-visual-lista-vertical-estilo-linktree-em-vez-de-grade))
+- [x] Estado "Em breve" para Controladoria (não focável como link)
 
-**Gate:** E2E confirma 7 cards, 2 desabilitados.
+**Gate:** E2E confirma 7 cards, 1 desabilitado. ✅ **concluída em 2026-07-27**, redesenhada em 2026-07-27 — `src/app/page.tsx` deixou de ser o placeholder da F0 ([DT-009](#12-débito-técnico) resolvido): agora usa `<PageShell>` e renderiza `<SectorCard>` para os 7 setores. A grade `grid-cols-1 sm:grid-cols-2` original foi substituída por uma lista vertical de coluna única (mesmo padrão em todas as larguras de tela) no redesenho visual — ver ADR-014. RH virou setor ativo na F2, então só Controladoria segue "em breve" — o item do cronograma e o gate foram atualizados para refletir isso (o texto original, escrito antes da F2, ainda citava RH). `e2e/navigation.spec.ts` deriva as contagens de ativos/"em breve" direto de `sectors`, então o teste não fica desatualizado se um setor mudar de estado.
 
 ### F4 — Telas de setor
-- [ ] Rota estática `/setor/[slug]` via `generateStaticParams`
-- [ ] Lista de links, navegação de volta, 404 para slug inválido
+- [x] Rota estática `/setor/[slug]` via `generateStaticParams`
+- [x] Lista de links, navegação de volta, 404 para slug inválido
 
-**Gate:** E2E percorre home → setor → link externo com `rel` seguro.
+**Gate:** E2E percorre home → setor → link externo com `rel` seguro. ✅ **concluída em 2026-07-27** — `src/app/setor/[slug]/page.tsx` gera as 7 rotas em build (`generateStaticParams`), inclusive a de Controladoria (ver [ADR-013](#adr-013--rota-estática-de-setor-em-breve-gerada-em-vez-de-404)); slug fora do registry cai no `notFound()` do Next, resolvido por `src/app/not-found.tsx` (novo). `e2e/navigation.spec.ts` cobre o percurso completo, o 404 e axe em ambas as telas.
+
+Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (ambos da F1) aplicavam `text-bond-navy/70` no texto secundário — 4.11:1, abaixo do piso AA de 4.5:1 do §2, só ficou visível agora porque a F1 não tinha rota real para o Playwright auditar. Trocado por `text-bond-navy` (cor cheia) nos dois componentes e nas telas novas; `src/lib/contrast.test.ts` já provava que navy cheio sobre branco passa AA, só não havia teste E2E que exercitasse o par real na tela até esta fase.
 
 ### F5 — Hardening da aplicação
 - [ ] CSP estrita com nonce, HSTS, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`
@@ -299,7 +306,7 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 - [ ] Projeto na Vercel, domínio, preview protegido por PR
 - [ ] Runbook de rollback validado na prática
 
-**Gate:** produção no ar, os 23 links conferidos manualmente.
+**Gate:** produção no ar, os 30 links conferidos manualmente.
 
 ### F7 — Operação
 - [ ] Link health check semanal (HEAD nas URLs, abre issue em 4xx/5xx)
@@ -603,6 +610,42 @@ O manual define a área de não-interferência do símbolo como "a altura de dua
 
 O tamanho mínimo (`--logo-min-height: 20mm`), por outro lado, vem direto do manual (redução mínima sem byline) e usa a unidade `mm` do CSS — que tem conversão exata para px (1in = 25.4mm) — em vez de um valor pré-convertido à mão.
 
+### ADR-013 — Rota estática de setor "em breve" gerada, em vez de 404
+**Data:** 2026-07-27 · **Status:** aceito
+
+`generateStaticParams` em `src/app/setor/[slug]/page.tsx` inclui **todos** os setores do registry, inclusive Controladoria (`status: 'coming-soon'`, sem links). A alternativa seria excluir setores "em breve" de `generateStaticParams`, fazendo `/setor/controladoria` cair em 404 como qualquer slug inexistente.
+
+Optamos por gerar a rota: o slug é válido — existe no registry, só ainda não tem links —, então tratá-lo como "não encontrado" seria enganoso para quem chegasse nele por link direto ou favorito. A página renderiza normalmente (título, tagline) e mostra "Nenhum link disponível ainda." em vez da lista. O card da home continua não navegável para esse setor (`<SectorCard>`, §4), então a única forma de chegar lá é digitando a URL — e nesse caso, ver a tela em vez de um 404 é o comportamento mais claro. Reavaliar se um setor "em breve" vier a precisar de conteúdo diferente de "nenhum link ainda" (ex.: uma data prevista).
+
+### ADR-014 — Redesenho visual: lista vertical estilo Linktree em vez de grade
+**Data:** 2026-07-27 · **Status:** aceito
+
+A F1/F3 originais usavam uma grade `grid-cols-1 sm:grid-cols-2` com cards de borda fina cinza-azulada — funcional, mas genérica: não comunicava a identidade Bondmann além da cor, e divergia do padrão pedido pelo usuário ("quero algo do mesmo padrão que o Linktree"). Redesenho aplicado a `<SectorCard>`, `<LinkButton>`, `<PatternBackground>`, à home, à tela de setor e ao 404:
+
+- **Lista vertical de coluna única** (`max-w-md`, centralizada) em vez de grade 2 colunas — mesmo padrão em qualquer largura de tela, replicando a estrutura de um Linktree real e unificando a linguagem visual entre a home (setores) e a tela de setor (links).
+- **`<RingBadge>`** (novo componente, `src/components/RingBadge.tsx`): medalhão circular com o símbolo oficial de seis anéis, repetido em todo card de setor e de link — reforça a marca em cada item da lista, não só no cabeçalho. Tom `solid` (fundo verde, ícone navy — mesmo par aprovado pelo §2) para itens ativos; tom `outline` (borda tracejada navy, sem preenchimento) para "em breve". Sempre `aria-hidden`, decorativo.
+- **Ícone de link externo em SVG** (não caractere de texto) no `<LinkButton>`, sinalizando que o link abre em nova aba — informação real sobre o comportamento, não decoração. Usar SVG em vez de um glifo de texto evita qualquer ambiguidade com a regra de contraste de texto do §2.
+- **Fundo neutro `#F5F6F1`** (não branco puro) no `body`, mais uma grade de pontos sutil (`opacity-[0.05]`) na `<PatternBackground>`, complementando o símbolo já existente em baixa opacidade — não é uma cor do manual, é uma escolha de design; contraste com texto navy permanece efetivamente idêntico ao de branco puro.
+- **Estado "em breve"** deixou de usar texto em opacidade reduzida (a lição da F4: `text-bond-navy/70` reprovava AA) — agora usa texto navy em opacidade cheia sempre, com a tag "Em breve" como selo (`bg-bond-green text-bond-navy`, par aprovado pelo §2) em vez de texto apagado.
+
+Nenhuma dependência nova: só Tailwind (classes utilitárias, `radial-gradient` via `style` inline) e o SVG do símbolo já existente em `brand-symbol.ts`. `npm run verify` (typecheck, lint, format, `validate:links`, 52 testes unitários com 100% de cobertura, build) passa sem alterações de schema ou de conteúdo — só de apresentação. `LinkButton.test.tsx` teve um assert reescrito (`children.length === 1` → checagem de nome acessível + ausência do texto de descrição), porque a estrutura interna do componente mudou; o contrato testado (rel seguro, presença condicional da descrição) continua o mesmo.
+
+### ADR-015 — Fundo navy, texto verde e tipografia sem itálico
+**Data:** 2026-07-27 · **Status:** aceito
+
+Segunda iteração visual, a pedido do usuário: inverter a paleta em nível de página (fundo navy, logo e texto principal em verde) e simplificar a tipografia. Aplicado a `globals.css`, `<PageShell>`, `<PatternBackground>`, `layout.tsx` e às três telas (`page.tsx`, `setor/[slug]/page.tsx`, `not-found.tsx`).
+
+- **Fundo da página:** `body` passa de um neutro claro para `var(--color-bond-navy)` sólido. **A regra do §2 não muda** — "verde nunca é cor de texto sobre fundo claro" continua valendo ao pé da letra; o que mudou é que o fundo deixou de ser claro. Texto verde sobre navy é o mesmo par navy/verde já aprovado (≈5.2:1, testado desde a F1), só com os papéis invertidos — nova entrada em `src/lib/contrast.test.ts` documenta essa direção especificamente.
+- **Logo:** `<PageShell>` passa `color="green"` ao `<Logo>` (prop que já existia desde a F1, só não era usada).
+- **Escopo do verde como texto:** só os elementos que ficam diretamente sobre o fundo navy (H1 de cada tela, subtítulo do hero, logo) viram verde. **Dentro dos cards — que continuam brancos — o texto continua navy.** Verde como texto de card violaria a regra do §2 (fundo branco é fundo claro); os cards não mudaram de cor de fundo neste redesenho, só a página ao redor deles.
+- **Texto de apoio sobre o fundo navy** (subtítulo da home, tagline da tela de setor, mensagem do 404) foi para branco, não verde — mantém uma hierarquia entre título (verde, mais forte) e texto secundário (branco), em vez de a página inteira ficar monocromática.
+- **Tipografia mais simples:** o itálico (proxy de "Info Book Italic" do manual, ADR-002) foi removido de todos os títulos — heading, nome de setor, título de link. A família continua Fira Sans (ADR-002 não muda, só o uso do itálico); `layout.tsx` deixou de baixar o estilo `italic` do Google Fonts (`style: ['normal']`), reduzindo o peso de fonte pela metade — simplificação que também ajuda o orçamento de performance do §10.
+- **Foco de teclado:** todo `focus-visible:outline` que apontava para `bond-navy` passou para `white`. Motivo: com `outline-offset-2`, o anel de foco é desenhado *fora* do elemento, sobre o que estiver atrás dele — que agora é o fundo navy da página na maioria dos casos. Um anel navy sobre fundo navy seria invisível; branco garante contraste alto em qualquer contexto (fundo navy ou borda de card branco).
+- **`<PatternBackground>`:** o segundo anel decorativo (antes navy sobre fundo claro) virou branco em baixíssima opacidade — navy sobre navy também seria invisível. A grade de pontos trocou de navy para verde pelo mesmo motivo.
+- **Card "em breve" e estado vazio de setor:** opacidade de fundo subiu de `white/60` para `white/90` — mais sólido, sem depender de blend com o navy por trás para continuar legível.
+
+Nenhuma dependência nova. `npm run verify` passa (53 testes, 100% de cobertura, build limpo). Reavaliar se o usuário pedir que o texto *dentro* dos cards também vire verde — nesse caso os cards precisariam deixar de ser brancos, porque a regra do §2 não abre exceção para conveniência de estilo.
+
 ---
 
 ## 12. Débito técnico
@@ -617,7 +660,7 @@ O tamanho mínimo (`--logo-min-height: 20mm`), por outro lado, vem direto do man
 | DT-006 | `brace-expansion` vulnerável na árvore de dev | P2 | DoS por expansão ilimitada, corrigido só na `5.0.8`, cujo export quebra o `minimatch` do ESLint. Chega via `eslint-config-next → eslint-plugin-import/jsx-a11y/react`. É dependência de lint: o padrão de glob vem da nossa própria config, não de entrada hostil, e nada disso entra no bundle. Remover o `--omit=dev` do passo bloqueante assim que o `eslint-config-next` subir para `minimatch@10+`. Ver [ADR-007](#adr-007--overrides-de-postcss-e-sharp-política-de-npm-audit) |
 | DT-007 | ESLint preso na linha 9 e TypeScript na linha 5 | P3 | Bloqueado por `eslint-plugin-react` (API do ESLint 10) e `typescript-eslint` (peer `<6.1.0`). Revisar a cada bump do `eslint-config-next`. Ver [ADR-008](#adr-008--eslint-fixado-na-linha-9-e-typescript-na-linha-5) |
 | DT-008 | Navegadores do Playwright não instalados no ambiente local | P3 | `npm run test:e2e` exige `npx playwright install --with-deps` uma vez por máquina. O CI da F0.5 faz isso no job; localmente é passo manual. As specs da F0 são smoke — o E2E de verdade começa na F3 |
-| DT-009 | Placeholder de rota em `src/app/page.tsx` | P1 | Existe só para o build da F0 ter rota real — lista simples de setores, sem `<PageShell>`/`<SectorCard>`. `layout.tsx` já recebeu a entrega real da F1 (Fira Sans, tokens). `page.tsx` é substituído pela grade da F3 |
+| ~~DT-009~~ | ~~Placeholder de rota em `src/app/page.tsx`~~ | — | **Resolvido em 2026-07-27.** Substituído pela grade real da F3 (`<PageShell>` + `<SectorCard>` por setor) |
 | ~~DT-010~~ | ~~Repositório remoto no GitHub ainda não existia~~ | — | **Resolvido em 2026-07-27.** Repositório criado como público em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) (branch protection em repo privado exige GitHub Pro — decisão do usuário foi tornar público) e `main` protegida |
 | DT-011 | Job `bench` em `ci.yml` é um placeholder | P2 | Roda `npm run bench --if-present`, que é um no-op enquanto o script não existir. Deixa de ser débito quando a F5/F10 instalar Lighthouse CI + size-limit e o script real for adicionado — nenhuma mudança no workflow será necessária nesse dia |
 | DT-012 | `required_approving_review_count: 1` em `main` sem um segundo mantenedor | P3 | Só o usuário tem acesso ao repositório hoje; GitHub não permite auto-aprovar o próprio PR nem o Dependabot aprova os próprios PRs, então **toda** PR — inclusive patch do Dependabot com auto-merge habilitado — espera uma aprovação manual do usuário antes de poder mergear. É o comportamento mais seguro possível para um mantenedor solo (nada mergeia sem alguém olhar), mas revisar se isso virar atrito real: baixar para 0 é a alternativa, documentando aqui o motivo |
@@ -633,6 +676,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-27 | `9798cd8` | F2: registry de links — schema Zod, 7 links do RH, DT-002 resolvido |
 | 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
 | 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |
 | 2026-07-27 | `a7ff485` | fix: semgrep --config auto exige métricas; doc:check compara commit que não existe ainda |

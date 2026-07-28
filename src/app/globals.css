@@ -7,6 +7,19 @@ html {
 
 body {
   min-height: 100dvh;
-  background: white;
-  color: var(--color-bond-navy);
+  /* Fundo navy da marca — ver ADR-015. Texto e logo passam a ser verdes
+   * sobre esse fundo escuro (~5.2:1, o mesmo par navy/verde do §2, ordem
+   * invertida). Superfícies de card continuam brancas com texto navy — o
+   * verde nunca é cor de texto sobre fundo claro, regra inalterada. */
+  background: var(--color-bond-navy);
+  color: var(--color-bond-green);
+}
+
+/* Grade de pontos da textura de fundo (`<PatternBackground>`). Extraída para
+ * classe em vez de `style` inline: a CSP da F5 (PROJECT.md §7) não permite
+ * `unsafe-inline` em `style-src`, então nenhum atributo `style` pode
+ * sobreviver na árvore renderizada. */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, var(--color-bond-green) 1px, transparent 1px);
+  background-size: 28px 28px;
 }

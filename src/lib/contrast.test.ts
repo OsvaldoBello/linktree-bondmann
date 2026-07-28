@@ -42,6 +42,11 @@ describe('pares usados na interface (PROJECT.md §2)', () => {
     expect(contrastRatio(NAVY, GREEN)).toBeGreaterThanOrEqual(WCAG_AA_NORMAL_TEXT);
   });
 
+  it('texto verde sobre fundo navy passa AA (mesmo par, ordem invertida — cabeçalho/hero do redesenho, ADR-015)', () => {
+    expect(meetsWcagAA(GREEN, NAVY)).toBe(true);
+    expect(contrastRatio(GREEN, NAVY)).toBeGreaterThanOrEqual(WCAG_AA_NORMAL_TEXT);
+  });
+
   it('verde nunca é cor de texto sobre fundo claro — reprova AA (≈2.0:1)', () => {
     const ratio = contrastRatio(GREEN, WHITE);
     expect(ratio).toBeGreaterThan(1.5);

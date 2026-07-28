@@ -10,32 +10,35 @@ export interface LogoProps {
 
 // `switch` em vez de lookup por objeto: evita indexação dinâmica
 // (`security/detect-object-injection`) e ainda cobre o caso hostil (valor
-// fora do union, só possível via bypass de tipo) caindo no padrão.
-function colorValueFor(color: LogoColor): string {
+// fora do union, só possível via bypass de tipo) caindo no padrão. Classes
+// completas e estáticas (não montadas por interpolação) porque o Tailwind
+// escaneia o texto-fonte procurando literais — uma string construída em
+// runtime não seria encontrada e cairia fora do CSS gerado.
+function colorClassFor(color: LogoColor): string {
   switch (color) {
     case 'green':
-      return 'var(--color-bond-green)';
+      return 'text-[var(--color-bond-green)]';
     case 'white':
-      return '#ffffff';
+      return 'text-white';
     case 'navy':
     default:
-      return 'var(--color-bond-navy)';
+      return 'text-[var(--color-bond-navy)]';
   }
 }
 
-// Altura de referência por preset, em px. O piso real — que nenhum destes
-// casos pode violar, mesmo se editado incorretamente no futuro — é
-// `--logo-min-height` em tokens.css (redução mínima do manual, ver PROJECT.md
-// §2). A largura segue do `aspectRatio` abaixo: nunca é escolhida direto.
-function heightPxFor(size: LogoSize): number {
+// Altura de referência por preset, sempre com o piso de `--logo-min-height`
+// (tokens.css, redução mínima do manual — PROJECT.md §2) via `max()` dentro
+// do valor arbitrário do Tailwind. A largura segue do `aspect-[...]` no
+// wrapper: nunca é escolhida direto.
+function heightClassFor(size: LogoSize): string {
   switch (size) {
     case 'sm':
-      return 80;
+      return 'h-[max(80px,var(--logo-min-height))]';
     case 'lg':
-      return 220;
+      return 'h-[max(220px,var(--logo-min-height))]';
     case 'md':
     default:
-      return 140;
+      return 'h-[max(140px,var(--logo-min-height))]';
   }
 }
 
@@ -49,32 +52,26 @@ function heightPxFor(size: LogoSize): number {
  * valor fora do union (só possível via bypass de tipo) cai no padrão em vez
  * de quebrar o layout.
  *
+ * Só classes Tailwind, nenhum atributo `style`: a CSP da F5 (PROJECT.md §7)
+ * não abre `unsafe-inline` em `style-src`, então um `style={{...}}` aqui
+ * seria bloqueado pelo navegador em produção.
+ *
  * A geometria vem de `./brand-symbol` (que espelha `public/brand/logo.svg`)
  * em vez de importar o arquivo, porque renderizar SVG externo como HTML
  * exigiria `dangerouslySetInnerHTML` — proibido pelo lint (`react/no-danger`).
  */
 export function Logo({ color = 'navy', size = 'md' }: LogoProps) {
-  const heightPx = heightPxFor(size);
-  const colorValue = colorValueFor(color);
-
   return (
     <span
       role="img"
       aria-label="Bondmann Química"
-      style={{
-        display: 'inline-flex',
-        boxSizing: 'content-box',
-        height: `max(${heightPx}px, var(--logo-min-height))`,
-        aspectRatio: '1582.88 / 1742.56',
-        padding: 'var(--logo-safe-area)',
-        color: colorValue,
-      }}
+      className={`inline-flex box-content aspect-[1582.88/1742.56] p-[var(--logo-safe-area)] ${heightClassFor(size)} ${colorClassFor(color)}`}
     >
       <svg
         viewBox={SYMBOL_VIEW_BOX}
         fill="currentColor"
         aria-hidden="true"
-        style={{ width: '100%', height: '100%' }}
+        className="h-full w-full"
       >
         {SYMBOL_PATHS.map((d) => (
           <path key={d} d={d} />

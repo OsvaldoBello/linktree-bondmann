@@ -1,4 +1,5 @@
 import type { SectorLink } from '@/content/links';
+import { RingBadge } from './RingBadge';
 
 export interface LinkButtonProps {
   readonly link: SectorLink;
@@ -14,12 +15,27 @@ export function LinkButton({ link }: LinkButtonProps) {
       href={link.href}
       target="_blank"
       rel="noopener noreferrer nofollow"
-      className="group flex flex-col gap-0.5 rounded-lg border border-bond-navy/15 bg-white px-4 py-3 transition-colors hover:border-bond-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bond-navy"
+      className="group flex items-center gap-3 rounded-[28px] border border-bond-navy/15 bg-white px-4 py-2.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-bond-green hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <span className="font-medium text-bond-navy">{link.title}</span>
-      {link.description ? (
-        <span className="text-sm text-bond-navy/70">{link.description}</span>
-      ) : null}
+      <RingBadge />
+      <span className="flex flex-1 flex-col gap-0.5">
+        <span className="font-medium text-bond-navy">{link.title}</span>
+        {link.description ? (
+          <span className="text-sm text-bond-navy">{link.description}</span>
+        ) : null}
+      </span>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-4 shrink-0 text-bond-navy transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:translate-y-0"
+      >
+        <path d="M7 13 13 7M7 7h6v6" />
+      </svg>
     </a>
   );
 }

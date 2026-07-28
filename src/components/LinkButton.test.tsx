@@ -28,8 +28,10 @@ describe('<LinkButton>', () => {
 
   it('omite a descrição quando ausente', () => {
     render(<LinkButton link={{ id: 'x', title: 'Portal', href: 'https://example.com/' }} />);
-    const link = screen.getByRole('link', { name: 'Portal' });
-    expect(link.children).toHaveLength(1);
+    // Nome acessível continua só "Portal" — nenhum elemento decorativo (badge,
+    // seta) entra no nome, e nenhum texto de descrição é renderizado.
+    expect(screen.getByRole('link', { name: 'Portal' })).toBeInTheDocument();
+    expect(screen.queryByText('Contexto')).not.toBeInTheDocument();
   });
 
   it('§7: todo link do registry real produz rel seguro — travado por teste, não por revisão', () => {
