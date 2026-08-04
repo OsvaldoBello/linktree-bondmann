@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-07-28 17:37 UTC | `e0cbb03` | `feat/f2-registry-links` |
+| 2026-08-04 17:53 UTC | `c784aaa` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -53,7 +53,7 @@ Um agregador de links próprio da Bondmann — no espírito do Linktree — com 
 <!-- AUTO:overview:start -->
 | Setores | Setores ativos | Links | Domínios distintos |
 |---|---|---|---|
-| 7 | 6 | 31 | 8 |
+| 7 | 6 | 35 | 8 |
 <!-- AUTO:overview:end -->
 
 ### Princípios de design do projeto
@@ -286,7 +286,7 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes. ✅ **concluída em 2026-07-27** — `src/lib/contrast.ts` reproduz a fórmula WCAG 2.2 e trava os pares do §2 (navy/branco, branco/navy e navy/verde passam AA; verde/branco reprova, ≈2.0:1, pinado por teste); `src/components/` (Logo, PatternBackground, PageShell, SectorCard, LinkButton) com 100% de cobertura, acima do piso de 90%. `<Logo>` não expõe `className`/`style` — safe-area e tamanho mínimo do manual não são sobrescrevíveis por prop, só por union fechado (`color`/`size`) com fallback seguro para valor hostil. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
 
 ### F2 — Registry de links
-- [x] `src/content/links.ts` com os 7 setores e 31 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27; Dashboard Comercial adicionado ao Comercial em 2026-07-28)
+- [x] `src/content/links.ts` com os 7 setores e 35 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27; Dashboard Comercial adicionado ao Comercial em 2026-07-28; os 5 GPTs da AlquimIA substituíram o hub único do Depto. Químico em 2026-08-04, [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora))
 - [x] `links-schema.ts`: HTTPS obrigatório, allowlist de domínios, denylist de encurtadores, slug único
 - [x] `npm run validate:links`
 - [x] Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* ([DT-002](#12-débito-técnico))
@@ -320,7 +320,7 @@ Achado durante a auditoria de axe desta fase: `<SectorCard>` e `<LinkButton>` (a
 - [ ] Projeto na Vercel, domínio, preview protegido por PR
 - [ ] Runbook de rollback validado na prática
 
-**Gate:** produção no ar, os 31 links conferidos manualmente.
+**Gate:** produção no ar, os 35 links conferidos manualmente.
 
 O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-bondmann.vercel.app` está no ar — mas servindo `feat/f2-registry-links`, não `main`. Fechar esta fase é mergear o [PR #5](https://github.com/OsvaldoBello/linktree-bondmann/pull/5) e devolver a *Production Branch* para `main`, nessa ordem — ver [DT-017](#12-débito-técnico).
 
@@ -334,7 +334,7 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 31 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27 e o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 35 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27, o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28 e os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
@@ -363,10 +363,16 @@ Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019]
 ### Controladoria — *Em breve*
 Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)).
 
-### Depto. Químico — 1 link
+### Depto. Químico — 5 links
 | Título | Destino |
 |---|---|
-| AlquimIA | `linktr.ee/gptsbondmann` |
+| AlquimIA · Desengraxantes | ChatGPT (GPT) |
+| AlquimIA · Fluidos e Lubrificantes | ChatGPT (GPT) |
+| AlquimIA · Tratamento de Superfícies | ChatGPT (GPT) |
+| AlquimIA · Limpeza e Higienização | ChatGPT (GPT) |
+| AlquimIA · Produtos de Uso Específico | ChatGPT (GPT) |
+
+Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` — um hub que só reunia estes mesmos GPTs. Ver [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora).
 
 ### Marketing — 7 links
 | Título | Destino |
@@ -443,7 +449,7 @@ Todo `<LinkButton>` renderiza `target="_blank" rel="noopener noreferrer nofollow
 `links-schema.ts` exige:
 
 - Protocolo `https://` — `http://` é rejeitado
-- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `linktr.ee`, `forms.cloud.microsoft` (Microsoft Forms do RH, F2)
+- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `forms.cloud.microsoft` (Microsoft Forms do RH, F2), `chatgpt.com` (GPTs da AlquimIA — [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora); `linktr.ee` saiu da lista no mesmo movimento, por não ter mais nenhum link)
 - Hostname fora da **denylist de encurtadores**: `bit.ly`, `tinyurl.com`, `t.co`, `goo.gl`, `ow.ly`, `is.gd`
 - Slug de setor único, id único dentro do setor, título não vazio
 
@@ -827,6 +833,40 @@ Os artefatos de investigação (`.lighthouseci/*.json` publicados como artefato 
 
 **Correção — `categories:performance` também precisou de margem.** A recalibração inicial deste ADR ajustou LCP, peso total e JS por rota, mas deixou `categories:performance` em `minScore: 0.98` — passou por acaso no run que gerou os números acima. No push seguinte (mesmo código, orçamento já recalibrado), a categoria reprovou nesse limiar: `found: 0.97` na home, a mesma faixa de variação (0.96–0.99) já registrada nesta seção como ruído normal de execução, mesmo com `numberOfRuns: 3`. Não é um metric novo nem uma decisão nova — é a mesma recalibração desta ADR, só que aplicada ao limiar que a primeira rodada de validação não tinha exercitado o suficiente para expor. Ajustado para `minScore: 0.95`, dando a mesma margem de segurança usada nos outros três limiares.
 
+### ADR-024 — `dev.bat` libera a porta 3000 em vez de avisar
+**Data:** 2026-08-04 · **Status:** aceito · **altera o §14**
+
+O `dev.bat` da F0 apenas **avisava** quando a 3000 já estava ocupada, e deixava o Next escolher outra porta sozinho. Na prática isso produzia dois problemas recorrentes, ambos relatados pelo usuário: o endereço impresso pelo próprio script (`http://localhost:3000`) passava a mentir, e a causa mais comum da porta ocupada é um `next dev` **deste mesmo projeto** que ficou órfão de uma sessão anterior — encerrar a janela do console nem sempre mata o processo filho. O resultado era uma segunda instância servindo em 3001 enquanto a aba aberta no navegador continuava apontando para a instância velha, com código velho.
+
+`dev.bat` agora chama `:liberar_porta` antes de subir: identifica quem escuta na 3000 (`netstat -ano -p tcp` + `findstr`), mostra o nome do processo e o PID, encerra com `taskkill /f /t` e só então inicia. Decisões dentro dessa rotina que valem registro:
+
+- **Encerra sem perguntar**, por pedido explícito do usuário. É um script de conveniência para *ver o site rodando* (§14) — não roda em CI, não roda no build, e o alvo é sempre um processo local de desenvolvimento. A informação de qual processo morreu fica na tela, então a ação não é silenciosa.
+- **PIDs 0 (Idle) e 4 (System) são pulados.** Nunca são o servidor de dev, e `taskkill` neles ou falha ou derruba a máquina.
+- **`/t` (árvore).** O que escuta na porta é o `node` filho do `npm run dev`; matar só ele deixa o `npm` pai órfão.
+- **Espera o socket ser devolvido** (até ~10 s, checando a cada segundo). O Windows não libera a porta no instante do `taskkill`, e sem essa espera o Next ainda a veria ocupada — o script trocaria um problema pelo outro.
+- **Falha não é fatal.** Se o processo for de outro usuário ou elevado, `taskkill` falha, `PORTA_OCUPADA` continua definida e o script cai no aviso antigo ("o Next vai subir em outra porta") em vez de abortar.
+- **`echo [^^!]` em vez de `[!]`.** Com `enabledelayedexpansion`, um `!` cru é delimitador de variável e some da saída — o `[!]` do script original já vinha sendo impresso como `[]` desde a F0, e uma linha com `[!]` *e* uma variável `!NOME_PROC!` imprimia texto corrompido. Corrigido nas duas ocorrências.
+
+Consequência aceita: se você estiver rodando **outro** projeto na 3000, o `dev.bat` vai encerrá-lo. É o comportamento pedido, e o nome do processo aparece na tela antes de morrer.
+
+Validado de verdade, não por inspeção: com um servidor HTTP ocupando a 3000, o `dev.bat` identificou `node.exe`, encerrou, esperou a liberação e o `next dev` subiu na 3000 (`GET / 200`, página real de 115 KB). Com a porta livre, a rotina não imprime nada e não faz nada.
+
+### ADR-025 — GPTs da AlquimIA direto no registry; `chatgpt.com` na allowlist, `linktr.ee` fora
+**Data:** 2026-08-04 · **Status:** aceito · **altera o §6 e o §7**
+
+O Depto. Químico tinha um link só: `linktr.ee/gptsbondmann`, um hub que reunia os GPTs da AlquimIA. A pedido do usuário, os cinco GPTs passaram a ser links diretos no registry (Desengraxantes, Fluidos e Lubrificantes, Tratamento de Superfícies, Limpeza e Higienização, Produtos de Uso Específico) e o hub saiu. Faz sentido para o propósito do projeto: o §1 existe para acabar com o "qual é o link certo", e um agregador que aponta para outro agregador só adiciona um salto para quem já sabe de qual linha precisa. Como efeito colateral, os cinco passam a ser encontráveis pela busca da home ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — antes, quem digitasse "desengraxante" não achava nada.
+
+**Allowlist (§7).** `chatgpt.com` entrou; `linktr.ee` saiu. Duas decisões separadas:
+
+- **Entrar com `chatgpt.com`** não fere a regra de "sem terceiros" do §7 — essa regra é sobre o que a *nossa página* carrega (script, fonte, cookie, pixel), e continua valendo integralmente: nada muda no bundle, na CSP ou na privacidade de quem visita. Um destino de link é outra categoria, e o registry já aponta para Microsoft, Google, Ploomes e Railway. Vale o mesmo tratamento dos demais: `rel="noopener noreferrer nofollow"` e `Referrer-Policy: no-referrer`, então a OpenAI não recebe de onde o clique veio.
+- **Sair com `linktr.ee`** porque nenhum link do registry usa mais esse domínio. Uma entrada morta na allowlist não é neutra: ela deixa passar, sem ninguém perceber, qualquer URL `linktr.ee` que entre por engano no futuro — inclusive uma que não seja da Bondmann. A allowlist só carrega domínio em uso. Voltar é uma linha, se o hub for reintroduzido.
+
+**Ressalva para o link health check da F7.** Os cinco destinos exigem conta ChatGPT e dependem de o GPT continuar compartilhado publicamente — mesma classe de fragilidade do [DT-004](#12-débito-técnico) (SharePoint com token). Pior: `chatgpt.com` fica atrás de proteção anti-bot, então um `HEAD` de runner de CI provavelmente responde 403 ou desafio mesmo com o link saudável. Quando a F7 for implementada, esses cinco precisam de tratamento próprio (verificação tolerante ou exclusão explícita da checagem), senão o cron abre issue toda semana por um problema que não existe.
+
+**Convenção de título.** O usuário enviou os nomes como "AlquimIA - Desengraxantes"; foram gravados como `AlquimIA · Desengraxantes`, com o mesmo separador `·` que o registry já usa em toda família de links (`FB026 · …`, `Mídia Compartilhada · …`). É só apresentação — o conteúdo é o que foi enviado.
+
+O contador do teste de sanidade (`src/content/links.test.ts`) foi de 31 para 35 links, e é ele que amarra o inventário do §6 ao registry: alterar um sem o outro quebra o CI.
+
 ## 12. Débito técnico
 
 | ID | Item | Prioridade | Contexto |
@@ -851,6 +891,7 @@ Os artefatos de investigação (`.lighthouseci/*.json` publicados como artefato 
 | DT-018 | Custo de JS da ilha cliente medido por aproximação, não pelo orçamento que vale | P2 | `size-limit` mede só o runtime compartilhado, e ele não mudou com a busca (113 549 B *brotli*, dentro do teto de 120 000 B) — o código da ilha vai para o chunk da rota, que esse orçamento não enxerga. A aproximação local foi comparar home (127.6 KiB de JS *brotli*, sem polyfill) com a tela de setor (125.3 KiB), mesma casca sem ilha: **~2.3 KiB**. O número que o §10 realmente orça por rota (`resource-summary:script:size`, 145 KB) sai do Lighthouse, que não roda neste ambiente ([DT-015](#12-débito-técnico)) — a primeira leitura real é o job `bench` do CI neste PR. Acompanhar esse run; se apertar, recalibrar com medição, nunca com estimativa |
 | DT-019 | Pesos e limiares da busca calibrados a olho, sem dado de uso | P3 | Os números do ranking ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — pesos por campo, tolerância de digitação, dispersão máxima da subsequência, teto de 6 resultados — foram escolhidos contra os 31 links de hoje e conferidos no navegador com buscas reais ("dashbord comercial", "cotaçao"). Não há telemetria para saber o que as pessoas realmente digitam, e o §7 não permite coletá-la. Recalibrar por relato de uso, ou quando o registry crescer o bastante para que o teto de 6 comece a esconder resultado bom |
 | ~~DT-020~~ | ~~Primeira medição real do Lighthouse reprova o orçamento do §10~~ | — | **Resolvido em 2026-07-28.** Investigado a pedido do usuário antes de decidir: o "80/98" de `/setor/marketing` era ruído de execução única em runner compartilhado (`numberOfRuns: 1`), não um problema real da rota — com mediana de 3 execuções as categorias de score passam nas duas rotas. LCP, peso total e JS por rota continuam reprovando de forma real e consistente, mesma causa nas duas rotas (custo estrutural de hidratação do App Router, não a busca da F6). Orçamento recalibrado contra a medição real. Ver [ADR-023](#adr-023--orçamento-de-performance-recalibrado-contra-medição-real-numberofruns-3-permanente) |
+| DT-022 | **Tela de admin para o Marketing editar links — avaliada, decisão pendente** | P1 | Pedido do usuário em 2026-08-04: facilitar a alteração de links pelo Marketing sem passar por um desenvolvedor. É exatamente o gatilho de reavaliação previsto na [ADR-004](#adr-004--registry-no-repositório-em-vez-de-cms-ou-banco) ("reavaliar se a edição por não-desenvolvedores virar necessidade recorrente"), e o §1 lista "painel administrativo" e "autenticação" como fora de escopo sem decisão registrada. Avaliação: um admin **com gravação** (formulário que persiste sozinho) é inviável sem quebrar quatro compromissos estruturais de uma vez — §1 (sem auth/painel), §4 (100% pré-renderizado, zero requisição em runtime), §7 (sem backend, sem cookies, sem terceiros; CSP com `form-action 'none'` e `connect-src 'self'`) e §8 (meta de zero segredos: gravar no repo exige token/GitHub App na Vercel, e autenticar "quem é do Marketing" exige um IdP). Não é impossível — é uma fase inteira (F8), com auth Entra ID, rota de API, revisão de segurança nova e vários ADRs superseded. Um admin **sem gravação** (editor client-side que valida e devolve o trecho pronto de `links.ts` para colar no GitHub) cabe dentro de todas as regras atuais, custa ~1 dia e resolve a parte cara do problema (formato, validação, erro de digitação), mantendo revisão por PR. Decidir entre os dois — ou pelo caminho de custo zero, dar acesso de escrita ao Marketing e ensiná-lo a editar `src/content/links.ts` pela interface web do GitHub — antes de escrever qualquer código |
 | DT-021 | Duas otimizações reais de performance identificadas, não aplicadas | P2 | A investigação da [ADR-023](#adr-023--orçamento-de-performance-recalibrado-contra-medição-real-numberofruns-3-permanente) achou dois candidatos concretos, não aplicados porque o usuário optou por recalibrar o orçamento em vez de investir em otimização agora: (1) `next/link` prefetch automático dos 7 `<SectorCard>` da home soma ~35–40 KB / 18 requisições de tráfego que o usuário não pediu ainda — desativável via `prefetch={false}`, com a contrapartida de perder a navegação instantânea; (2) Fira Sans carrega 4 pesos (400/500/600/700, ~72 KiB) — vale conferir quais pesos o design realmente usa antes de cortar. Nenhum dos dois altera o LCP estrutural (custo de hidratação do App Router), mas reduziriam o peso total e o tempo de script de forma mensurável. Revisitar se o orçamento apertar de novo ou se performance virar prioridade |
 
 ---
@@ -862,6 +903,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-07-28 | `c784aaa` | recalibrar categories:performance também — mesma variação já documentada no ADR-023 |
 | 2026-07-28 | `e0cbb03` | recalibrar orçamento de performance (§10) contra medição real; numberOfRuns 3 permanente |
 | 2026-07-28 | `8fa4b5a` | investigação DT-020: 3 execuções do Lighthouse (mediana) + upload dos relatórios |
 | 2026-07-28 | `61b1ee4` | docs: registrar a primeira medição real do bench — CI são, orçamento não |
@@ -902,7 +944,7 @@ Para quem só quer **ver o site rodando** — revisar um link, conferir um texto
 | `dev.bat` | Modo desenvolvimento com hot reload em `http://localhost:3000` |
 | `dev.bat prod` | Build de produção e servidor local — é o artefato que vai ao ar |
 
-O script confere se o Node está no PATH, instala as dependências com `npm ci --ignore-scripts` quando falta `node_modules`, e avisa se a porta 3000 já está ocupada. **Não substitui `npm run verify`**, que é o que o CI roda: serve para olhar, não para aprovar.
+O script confere se o Node está no PATH, instala as dependências com `npm ci --ignore-scripts` quando falta `node_modules`, e **libera a porta 3000 antes de subir** — se algo estiver escutando nela (tipicamente um `next dev` órfão de uma sessão anterior), o script mostra o nome do processo e o PID, encerra e espera a porta ser devolvida. Se o processo não puder ser encerrado (outro usuário, serviço elevado), volta ao aviso antigo e deixa o Next escolher outra porta. Ver [ADR-024](#adr-024--devbat-libera-a-porta-3000-em-vez-de-avisar) — inclusive para a consequência aceita: **outro projeto rodando na 3000 também será encerrado**. **Não substitui `npm run verify`**, que é o que o CI roda: serve para olhar, não para aprovar.
 
 **Se uma tela parar de reagir a clique/digitação sem erro nenhum no console:** reinicie o `dev.bat` em vez de confiar no hot reload. Observado ao vivo em 2026-07-28, com a busca da home ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)): o HTML novo carregava (campo visível), mas nada respondia — a aba tinha sido aberta antes de `<LinkSearch>` (primeira `'use client'` do projeto) existir, e o Fast Refresh do Turbopack não republica de forma confiável a referência de hidratação quando um Server Component passa a importar um Client Component novo no meio da sessão. Fechar e reabrir o `dev.bat` resolveu. Não é bug do componente — é uma limitação conhecida do Fast Refresh nessa fronteira; um `Ctrl+Shift+R` na aba não basta, porque o problema está no servidor de dev, não no cache do navegador.
 

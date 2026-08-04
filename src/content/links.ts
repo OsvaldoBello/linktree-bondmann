@@ -167,12 +167,34 @@ export const sectors: readonly Sector[] = [
     name: 'Depto. Químico',
     status: 'active',
     tagline: 'Ferramentas de IA aplicadas à química',
+    // Os cinco GPTs da AlquimIA substituíram, em 2026-08-04, o hub único no
+    // linktr.ee que apontava para eles: um salto a menos para quem já sabe de
+    // qual linha precisa. Ver ADR-025.
     links: [
       {
-        id: 'alquimia',
-        title: 'AlquimIA',
-        description: 'Assistentes de IA da Bondmann',
-        href: 'https://linktr.ee/gptsbondmann',
+        id: 'alquimia-desengraxantes',
+        title: 'AlquimIA · Desengraxantes',
+        href: 'https://chatgpt.com/g/g-6a038e60c6d481919ae59b4ee52741f2-alquimia-desengraxantes',
+      },
+      {
+        id: 'alquimia-fluidos-lubrificantes',
+        title: 'AlquimIA · Fluidos e Lubrificantes',
+        href: 'https://chatgpt.com/g/g-6a04e37ff97081919701b5202ccf9468-alquimia-fluidos-e-lubrificantes',
+      },
+      {
+        id: 'alquimia-tratamento-superficies',
+        title: 'AlquimIA · Tratamento de Superfícies',
+        href: 'https://chatgpt.com/g/g-6a04e536a5348191bb5e53ec9b9690f3-alquimia-tratamento-de-superficies',
+      },
+      {
+        id: 'alquimia-limpeza-higienizacao',
+        title: 'AlquimIA · Limpeza e Higienização',
+        href: 'https://chatgpt.com/g/g-6a32a16ffa4c819192f221b7ddf158bb-alquimia-limpeza-e-higienizacao',
+      },
+      {
+        id: 'alquimia-uso-especifico',
+        title: 'AlquimIA · Produtos de Uso Específico',
+        href: 'https://chatgpt.com/g/g-6a32b355a7a88191995be0d96c415da1-alquimia-uso-especifico',
       },
     ],
   },

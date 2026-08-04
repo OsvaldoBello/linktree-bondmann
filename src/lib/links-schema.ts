@@ -10,8 +10,10 @@ const ALLOWED_HOSTNAMES = new Set([
   'forms.ploomes.com',
   'docs.google.com',
   'drive.google.com',
-  'linktr.ee',
   'forms.cloud.microsoft',
+  // GPTs da AlquimIA (Depto. Químico). `linktr.ee` saiu da lista no mesmo
+  // movimento: era usado por um único link, hoje substituído. Ver ADR-025.
+  'chatgpt.com',
 ]);
 
 // Domínios com wildcard: qualquer subdomínio é aceito.
