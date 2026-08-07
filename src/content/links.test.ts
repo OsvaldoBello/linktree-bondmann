@@ -10,9 +10,9 @@ import { sectors } from './links';
  * abaixo cobrem invariantes de conteúdo que o schema não modela.
  */
 describe('registry de setores', () => {
-  it('bate com o inventário do PROJECT.md §6: 7 setores, 35 links', () => {
+  it('bate com o inventário do PROJECT.md §6: 7 setores, 36 links', () => {
     expect(sectors).toHaveLength(7);
-    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(35);
+    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(36);
   });
 
   it('mantém a mesma URL para os links divulgados por mais de um setor', () => {

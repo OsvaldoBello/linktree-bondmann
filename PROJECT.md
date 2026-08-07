@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-08-04 18:11 UTC | `38e675e` | `feat/f2-registry-links` |
+| 2026-08-07 20:19 UTC | `fce8f72` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -53,7 +53,7 @@ Um agregador de links próprio da Bondmann — no espírito do Linktree — com 
 <!-- AUTO:overview:start -->
 | Setores | Setores ativos | Links | Domínios distintos |
 |---|---|---|---|
-| 7 | 6 | 35 | 8 |
+| 7 | 6 | 36 | 7 |
 <!-- AUTO:overview:end -->
 
 ### Princípios de design do projeto
@@ -334,7 +334,7 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 35 links.** Fonte original: `Links externos.docx`, mais os 7 links do RH enviados diretamente pelo usuário em 2026-07-27, o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28 e os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04. Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 36 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, e os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
@@ -385,16 +385,19 @@ Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` �
 | Mídia Compartilhada · Solicitação de Alteração de Campanha | Google Forms |
 | Mídia Compartilhada · Criativos | Google Drive (pasta) |
 
-### RH — 7 links
+### RH — 8 links
 | Título | Destino |
 |---|---|
-| Solicitação de Ajuda de Custo | Microsoft Forms |
-| Prorrogação de Ajuda de Custo | Microsoft Forms |
-| Acompanhamento de Ajuda de Custo | Microsoft Forms |
-| Requerimento Programa de Incentivo à Educação | Microsoft Forms |
-| FB030 · Alteração de Cargo | Microsoft Forms |
-| FB031 · Solicitação de Contratação | Microsoft Forms |
-| FB032 · Solicitação de Encerramento de Contrato | Microsoft Forms |
+| DB022 · Plano de Ajuda de Custo | SharePoint (PDF) |
+| Tabela de Benefícios · Valorização do Autodesenvolvimento (UBD) | SharePoint (PDF) |
+| DB020 · Política Comercial e Financeira - Representantes | SharePoint (PDF) |
+| DB032 · Tabela de Brindes | SharePoint (PDF) |
+| DB034 · Política de Adequação Contratual | SharePoint (PDF) |
+| DB038 · Programa de Incentivo à Educação 2026 | SharePoint (PDF) |
+| Política de Férias | SharePoint (PDF) |
+| Política de Viagens | SharePoint (PDF) |
+
+Os 8 links de políticas substituíram, em 2026-08-07, os 7 formulários Microsoft Forms (ajuda de custo, contratação, alteração de cargo) enviados pelo usuário em 2026-07-27. O domínio `forms.cloud.microsoft` saiu da allowlist do schema por não ter mais nenhum link ativo usando-o.
 
 ### TI — 2 links
 | Título | Destino |
@@ -449,7 +452,7 @@ Todo `<LinkButton>` renderiza `target="_blank" rel="noopener noreferrer nofollow
 `links-schema.ts` exige:
 
 - Protocolo `https://` — `http://` é rejeitado
-- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `forms.cloud.microsoft` (Microsoft Forms do RH, F2), `chatgpt.com` (GPTs da AlquimIA — [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora); `linktr.ee` saiu da lista no mesmo movimento, por não ter mais nenhum link)
+- Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `chatgpt.com` (GPTs da AlquimIA — [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora); `linktr.ee` saiu da lista no mesmo movimento, por não ter mais nenhum link). `forms.cloud.microsoft` (Microsoft Forms do RH, F2) saiu da lista em 2026-08-07 quando os 8 links de políticas de RH (todos SharePoint) substituíram os formulários — mesmo padrão do `linktr.ee`.
 - Hostname fora da **denylist de encurtadores**: `bit.ly`, `tinyurl.com`, `t.co`, `goo.gl`, `ow.ly`, `is.gd`
 - Slug de setor único, id único dentro do setor, título não vazio
 
@@ -903,6 +906,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-08-04 | `fce8f72` | docs: DT-017 — producao parou de acompanhar esta branch |
 | 2026-08-04 | `38e675e` | dev.bat libera a porta 3000; AlquimIA vira 5 GPTs no registry |
 | 2026-07-28 | `c784aaa` | recalibrar categories:performance também — mesma variação já documentada no ADR-023 |
 | 2026-07-28 | `e0cbb03` | recalibrar orçamento de performance (§10) contra medição real; numberOfRuns 3 permanente |
