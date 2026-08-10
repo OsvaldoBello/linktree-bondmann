@@ -7,7 +7,7 @@ export interface LinkButtonProps {
    * Setor de origem. Só a busca da home passa isso — ali o resultado é global
    * e o card precisa dizer de onde veio; na tela de setor o cabeçalho já diz.
    */
-  readonly sectorName?: string;
+  readonly sectorName?: string | undefined;
 }
 
 /**

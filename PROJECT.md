@@ -416,7 +416,7 @@ Duas URLs aparecem em mais de um setor de propósito — não é duplicação ac
 | Portal de Chamados | Marketing, TI, Depto. Químico, RH | Cada setor o divulga como porta de entrada própria — ver [ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh) |
 | Dashboard Comercial | Comercial, TI | Mantido pela TI, consumido pelo Comercial — quem procura não deveria precisar saber de quem é a infraestrutura |
 
-A URL é uma constante única em `links.ts` nos dois casos, e `links.test.ts` falha se o mesmo `id` aparecer com URLs diferentes entre setores: o risco real é atualizar uma cópia e esquecer a outra. Na busca da home, o link cross-listado aparece **uma vez só**, no setor de maior pontuação ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)).
+A URL é uma constante única em `links.ts` nos dois casos, e `links.test.ts` falha se o mesmo `id` aparecer com URLs diferentes entre setores: o risco real é atualizar uma cópia e esquecer a outra. Na busca da home, o link cross-listado aparece **uma vez só e sem setor no card** — nenhum dos setores que o divulgam é "o dono" ([ADR-028](#adr-028--busca-para-de-atribuir-um-setor-a-link-cross-listado)).
 
 ### Setores removidos do escopo
 **Financeiro** e **Produção** não constam da v1 — não possuíam links e não há previsão. Reintroduzir exige apenas adicioná-los ao registry.
@@ -529,7 +529,7 @@ Todo deploy de produção é rastreável a um commit assinado, revisado, com CI 
 | Métrica | Cobertura | Limiar |
 |---|---|---|
 | Linhas | 100.0% ✅ | 85% |
-| Branches | 100.0% ✅ | 90% |
+| Branches | 99.1% ✅ | 90% |
 | Funções | 100.0% ✅ | 85% |
 | Statements | 100.0% ✅ | 85% |
 <!-- AUTO:tests:end -->
@@ -767,7 +767,7 @@ O §1 listava "busca" entre o que **não** construir sem uma decisão registrada
 
 1. **Todo token precisa casar em algum campo**, senão a entrada sai. Sem isso, "cotacao xyz" traria as cotações como se `xyz` não tivesse sido digitado — o oposto de "o link mais perto".
 2. **Subsequência limitada a 2× o tamanho do token.** Sem esse limite, "cotacao" casava com "Solicitação de Alteração de Campanha" (as letras existem, espalhadas por 20 caracteres) — acaso virando resultado. Com ele, "dshbrd" continua achando "Dashboard Comercial". Calibrado observando o resultado real no navegador, não no papel.
-3. **Empate desempatado pela ordem do registry**, e link cross-listado aparece uma vez só (o de maior pontuação): a mesma URL repetida no resultado se lê como defeito.
+3. **Empate desempatado pela ordem do registry**, e link cross-listado aparece uma vez só, **sem setor atribuído**: a mesma URL repetida no resultado se lê como defeito, e atribuir um único setor a um link que vários divulgam se lê como informação errada — ver [ADR-028](#adr-028--busca-para-de-atribuir-um-setor-a-link-cross-listado).
 
 Nenhum desses números vem de dado de uso — ver [DT-019](#12-débito-técnico). A alternativa de campo aberto (mostrar tudo, ordenado por proximidade, sem corte) foi descartada: com 31 links, uma lista que nunca encurta não é busca, é a home com outra ordem.
 
@@ -881,7 +881,7 @@ Vale o mesmo raciocínio já registrado no §6 para os dois setores originais: q
 
 Duas consequências previstas, ambas aceitas:
 
-- **A busca da home mostra o link uma vez só**, no setor de maior pontuação ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — o comportamento já existia para os dois setores anteriores e não muda com quatro.
+- **A busca da home mostra o link uma vez só**, sem setor atribuído ([ADR-028](#adr-028--busca-para-de-atribuir-um-setor-a-link-cross-listado)) — o comportamento de deduplicar já existia para os dois setores anteriores e não muda com quatro; a parte de omitir o setor foi corrigida depois, quando quatro setores tornaram o problema visível.
 - **As taglines não foram reescritas.** "Ferramentas de IA aplicadas à química" e "Políticas e benefícios" descrevem o que cada setor tem de próprio; o portal é transversal, e listá-lo em toda tagline diluiria a frase que existe para diferenciar os setores na home.
 
 No mesmo movimento entraram os 8 links de políticas do RH enviados pelo usuário em 2026-08-07 (commit `bdf6046`), que já haviam substituído os 7 formulários Microsoft Forms — ver §6. O contador de `links.test.ts` foi de 36 para 38.
@@ -892,6 +892,19 @@ No mesmo movimento entraram os 8 links de políticas do RH enviados pelo usuári
 O job `audit` do CI (§8) reprovou o commit `b47521c` — que só alterava `links.ts`/`links.test.ts`/`PROJECT.md`, nada de dependências — por um aviso publicado *depois* do último `npm ci` local: [`GHSA-2v37-7h3g-55p8`](https://github.com/advisories/GHSA-2v37-7h3g-55p8), severidade **high**, em `nanoid <3.3.17` ("custom generators can loop indefinitely when size is zero"). Mesma classe de problema do [ADR-007](#adr-007--overrides-de-postcss-e-sharp-política-de-npm-audit): `nanoid@3.3.16` chega transitivo de `postcss@8.5.23` (já elevado por `overrides`), e `npm audit --audit-level=high --omit=dev` (o passo bloqueante da §8) reprova a árvore de produção com ele presente.
 
 Elevado por `overrides` para `3.3.17` — bump de patch, dentro do range `^3.3.6` que o próprio `postcss` declara como peer, então não força uma versão incompatível. `npm audit --audit-level=high --omit=dev` volta a reportar zero achados; `npm run verify` completo (100% de cobertura, build) passa sem nenhuma outra mudança. Diferença para o ADR-007: aquele caso foi achado numa auditoria proativa da F0.5; este apareceu como CI vermelho num PR que não tocava dependência nenhuma — o lembrete prático de que a auditoria "bloqueante" desta seção pode reprovar builds antigos a qualquer momento, sem nenhum código do projeto ter mudado. Não há ação de acompanhamento: a versão-alvo já resolve o aviso.
+
+### ADR-028 — Busca para de atribuir um setor a link cross-listado
+**Data:** 2026-08-10 · **Status:** aceito · **altera o §6 e o ADR-021**
+
+Achado pelo usuário: com o Portal de Chamados divulgado por quatro setores desde o [ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh), buscar "Portal de Chamados" na home devolvia o card rotulado **Depto. Químico** — não porque esse setor "seja o dono" do link, mas porque `searchLinks` (ADR-021, ponto 3) desempatava por ordem do registry, e Depto. Químico é o primeiro dos quatro na ordem alfabética dos setores. O usuário via isso como resultado errado, não como detalhe de implementação: o §6 é explícito — "cada setor o divulga como porta de entrada própria" — e o card atribuindo um único setor contradiz essa premissa na cara de quem busca.
+
+**Correção em `src/lib/search.ts`.** `searchLinks` agora pré-computa quantos setores usam cada `href` do registry. Ao montar cada `SearchHit`, se o `href` aparece em mais de um setor, `sector` sai como `undefined` em vez do setor vencedor do desempate; `LinkButton` já tratava `sectorName` como opcional (usado nas telas de setor, onde nunca é passado), então omitir virou o caminho natural — sem `<LinkButton>` novo, sem prop nova. `LinkSearch.tsx` trocou a `key` de `` `${sector.slug}/${link.id}` `` para `link.href` (único após a deduplicação, e agora o único dado estável quando não há setor).
+
+**Por que não mostrar todos os setores, em vez de nenhum.** Cogitado e descartado: um card listando "Marketing, TI, Depto. Químico, RH" para um resultado de busca é mais peso visual do que a decisão pede, e essa lista cresce a cada setor novo que passe a divulgar o link — o card de busca não deveria precisar mudar de tamanho por causa disso. Omitir é a opção que não mente (não afirma um dono que não existe) e não precisa de manutenção conforme mais setores cross-listam o mesmo link.
+
+**Escopo do teto de dedução.** A regra "cross-listado" é sobre a mesma `href`, não o mesmo `id` — os dois já andam juntos no registry (mesmo `id`, mesma constante de URL), mas é o `href` que a busca usa para deduplicar desde o ADR-021, então manter esse critério aqui evita uma segunda noção de "mesmo link" no mesmo arquivo.
+
+Cobertura: `src/lib/search.test.ts` ganhou casos para o Portal de Chamados e o Dashboard Comercial contra o registry real (ambos devem devolver `sector: undefined`); `src/components/LinkSearch.test.tsx` ganhou um caso de integração com dois setores fictícios compartilhando `href`, confirmando que nenhum dos dois nomes aparece no card renderizado. `npm run verify` completo passa, cobertura de `search.ts` em 100% de linhas/funções (99% de branch — o `?? 0` do `Map.get` num `href` que acabou de ser inserido no mesmo laço é inalcançável por construção, mesmo padrão de fallback defensivo já usado no resto do arquivo por causa de `noUncheckedIndexedAccess`).
 
 | ID | Item | Prioridade | Contexto |
 |---|---|---|---|

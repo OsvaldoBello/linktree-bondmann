@@ -107,8 +107,8 @@ export function LinkSearch({ sectors, children }: LinkSearchProps) {
       ) : hits.length > 0 ? (
         <ul className="mx-auto flex w-full max-w-md flex-col gap-2">
           {hits.map((hit) => (
-            <li key={`${hit.sector.slug}/${hit.link.id}`}>
-              <LinkButton link={hit.link} sectorName={hit.sector.name} />
+            <li key={hit.link.href}>
+              <LinkButton link={hit.link} sectorName={hit.sector?.name} />
             </li>
           ))}
         </ul>

@@ -189,16 +189,15 @@ describe('searchLinks', () => {
     expect(titlesFor('cotacao xyzwk')).toEqual([]);
   });
 
-  it('não repete link cross-listado — mantém o setor de maior pontuação', () => {
+  it('não repete link cross-listado — e não atribui a nenhum setor', () => {
     const hits = searchLinks(fixture, 'dashboard');
     const dashboards = hits.filter((hit) => hit.link.title === 'Dashboard Comercial');
     expect(dashboards).toHaveLength(1);
-    // Empate de score em "dashboard": desempata pela ordem do registry, e
-    // Comercial vem antes de TI.
-    expect(dashboards[0]?.sector.slug).toBe('comercial');
+    // Comercial e TI divulgam o mesmo link — nenhum dos dois é "o dono".
+    expect(dashboards[0]?.sector).toBeUndefined();
   });
 
-  it('leva junto o setor de origem de cada resultado', () => {
+  it('leva junto o setor de origem de cada resultado, quando não é cross-listado', () => {
     const hit = searchLinks(fixture, 'chamados')[0];
     expect(hit?.sector).toEqual({ slug: 'ti', name: 'TI' });
   });
@@ -216,10 +215,18 @@ describe('searchLinks', () => {
 });
 
 describe('busca contra o registry real', () => {
-  it('acha o Dashboard Comercial do setor Comercial', () => {
+  it('acha o Dashboard Comercial sem atribuí-lo a Comercial ou TI — é cross-listado', () => {
     const hit = searchLinks(sectors, 'dashboard comercial')[0];
     expect(hit?.link.href).toBe('https://dashboard-bondmann-production.up.railway.app/');
-    expect(hit?.sector.slug).toBe('comercial');
+    expect(hit?.sector).toBeUndefined();
+  });
+
+  it('acha o Portal de Chamados sem atribuí-lo a um único setor — é cross-listado', () => {
+    const hit = searchLinks(sectors, 'portal de chamados')[0];
+    expect(hit?.link.href).toBe(
+      'https://portal-chamados-bondmann-production.up.railway.app/workspace',
+    );
+    expect(hit?.sector).toBeUndefined();
   });
 
   it('acha um formulário do RH mesmo com a busca escrita errado', () => {

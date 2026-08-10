@@ -63,6 +63,52 @@ describe('<LinkSearch>', () => {
     expect(screen.queryByText('lista de setores')).not.toBeInTheDocument();
   });
 
+  it('não mostra rótulo de setor para link cross-listado', async () => {
+    const crossListed: readonly Sector[] = [
+      {
+        slug: 'depto-quimico',
+        name: 'Depto. Químico',
+        status: 'active',
+        tagline: 'Atendimento',
+        links: [
+          {
+            id: 'portal-chamados',
+            title: 'Portal de Chamados',
+            href: 'https://portal.example.com/workspace',
+          },
+        ],
+      },
+      {
+        slug: 'rh',
+        name: 'RH',
+        status: 'active',
+        tagline: 'Atendimento',
+        links: [
+          {
+            id: 'portal-chamados',
+            title: 'Portal de Chamados',
+            href: 'https://portal.example.com/workspace',
+          },
+        ],
+      },
+    ];
+    const user = userEvent.setup();
+    render(
+      <LinkSearch sectors={crossListed}>
+        <ul>
+          <li>lista de setores</li>
+        </ul>
+      </LinkSearch>,
+    );
+
+    await user.type(screen.getByLabelText('Buscar link'), 'portal de chamados');
+
+    const link = screen.getByRole('link', { name: /Portal de Chamados/ });
+    // Nem "Depto. Químico" nem "RH" — nenhum dos dois é o dono do link.
+    expect(link).not.toHaveTextContent('Depto. Químico');
+    expect(link).not.toHaveTextContent('RH');
+  });
+
   it('anuncia a contagem de resultados para leitor de tela', async () => {
     const user = userEvent.setup();
     renderSearch();

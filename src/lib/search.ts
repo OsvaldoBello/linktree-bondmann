@@ -18,8 +18,13 @@ import type { Sector, SectorLink } from '@/content/links';
 
 export interface SearchHit {
   readonly link: SectorLink;
-  /** Setor de origem — exibido junto do resultado, já que a busca é global. */
-  readonly sector: Pick<Sector, 'slug' | 'name'>;
+  /**
+   * Setor de origem — exibido junto do resultado, já que a busca é global.
+   * `undefined` quando o link é cross-listado (aparece em mais de um setor,
+   * ver PROJECT.md §6): nenhum dos setores é "o dono", então atribuir um só —
+   * mesmo o de maior pontuação — informa o usuário errado.
+   */
+  readonly sector: Pick<Sector, 'slug' | 'name'> | undefined;
   /** 0 (excluído) a 1 (casamento perfeito). Exposto para teste e depuração. */
   readonly score: number;
 }
@@ -208,8 +213,9 @@ function scoreEntry(tokens: readonly string[], fields: readonly WeightedField[])
  * Links de todos os setores ordenados por proximidade da busca.
  *
  * Links cross-listados (Portal de Chamados, Dashboard Comercial — ver §6)
- * aparecem uma única vez, no setor que pontuou mais alto: repetir a mesma URL
- * no resultado se lê como defeito, não como informação.
+ * aparecem uma única vez e sem setor: cada setor os divulga como porta de
+ * entrada própria, então nenhum é "o dono" — atribuir um, mesmo o de maior
+ * pontuação, seria uma escolha arbitrária disfarçada de informação.
  */
 export function searchLinks(
   sectors: readonly Sector[],
@@ -218,6 +224,13 @@ export function searchLinks(
 ): readonly SearchHit[] {
   const tokens = normalize(query).split(' ').filter(Boolean);
   if (tokens.length === 0) return [];
+
+  const hrefCounts = new Map<string, number>();
+  for (const sector of sectors) {
+    for (const link of sector.links) {
+      hrefCounts.set(link.href, (hrefCounts.get(link.href) ?? 0) + 1);
+    }
+  }
 
   const scored: { readonly hit: SearchHit; readonly order: number }[] = [];
   let order = 0;
@@ -233,8 +246,13 @@ export function searchLinks(
 
       const score = scoreEntry(tokens, fields);
       if (score >= MIN_SCORE) {
+        const crossListed = (hrefCounts.get(link.href) ?? 0) > 1;
         scored.push({
-          hit: { link, sector: { slug: sector.slug, name: sector.name }, score },
+          hit: {
+            link,
+            sector: crossListed ? undefined : { slug: sector.slug, name: sector.name },
+            score,
+          },
           order,
         });
       }
