@@ -292,18 +292,18 @@ export const sectors: readonly Sector[] = [
       },
       {
         id: 'db038-programa-incentivo-educacao-2026',
-        title: 'Programa de Incentivo à Educação 2026',
+        title: 'Programa de Incentivo à Educação 2026 (CLT)',
         description: 'DB038',
         href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQBX69HIZHE9SLTXfX5DwL3fARknU-DCr28_RVp2R-iBu4c?e=uBwCqo',
       },
       {
         id: 'politica-ferias',
-        title: 'Política de Férias',
+        title: 'Política de Férias (CLT)',
         href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQCXanpYStSTTq1llexBgQPeAbHXSTcHD8x5kmqzvGHfT3U?e=lAsBM4',
       },
       {
         id: 'politica-viagens',
-        title: 'Política de Viagens',
+        title: 'Política de Viagens (CLT)',
         href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQBbw2zuNL1rQba289lTJ5l9AZC3Aj0-SlQ309V3HyG90PI?e=Lm3bfT',
       },
       {

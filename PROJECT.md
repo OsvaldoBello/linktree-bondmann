@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-08-10 14:54 UTC | `b47521c` | `feat/f2-registry-links` |
+| 2026-08-10 17:17 UTC | `87b4379` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -394,12 +394,14 @@ Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` �
 | DB020 · Política Comercial e Financeira - Representantes | SharePoint (PDF) |
 | DB032 · Tabela de Brindes | SharePoint (PDF) |
 | DB034 · Política de Adequação Contratual | SharePoint (PDF) |
-| DB038 · Programa de Incentivo à Educação 2026 | SharePoint (PDF) |
-| Política de Férias | SharePoint (PDF) |
-| Política de Viagens | SharePoint (PDF) |
+| DB038 · Programa de Incentivo à Educação 2026 (CLT) | SharePoint (PDF) |
+| Política de Férias (CLT) | SharePoint (PDF) |
+| Política de Viagens (CLT) | SharePoint (PDF) |
 | Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
 
 Os 8 links de políticas substituíram, em 2026-08-07, os 7 formulários Microsoft Forms (ajuda de custo, contratação, alteração de cargo) enviados pelo usuário em 2026-07-27. O domínio `forms.cloud.microsoft` saiu da allowlist do schema por não ter mais nenhum link ativo usando-o.
+
+Em 2026-08-10, a pedido do usuário, os títulos de "Programa de Incentivo à Educação 2026", "Política de Férias" e "Política de Viagens" ganharam o sufixo **(CLT)** — essas três políticas se aplicam só a colaboradores CLT, e as demais políticas de RH do setor não têm essa restrição.
 
 ### TI — 2 links
 | Título | Destino |
@@ -940,6 +942,8 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-08-10 | `87b4379` | fix: busca não atribui mais um setor a link cross-listado |
+| 2026-08-10 | `4896fb9` | fix: override nanoid contra aviso GHSA-2v37-7h3g-55p8 |
 | 2026-08-10 | `b47521c` | Portal de Chamados cross-listado no Depto. Químico e no RH |
 | 2026-08-07 | `bdf6046` | RH: trocar formulários de ajuda de custo por 8 links de políticas |
 | 2026-08-04 | `fce8f72` | docs: DT-017 — producao parou de acompanhar esta branch |
