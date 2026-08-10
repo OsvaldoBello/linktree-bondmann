@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-08-10 14:43 UTC | `bdf6046` | `feat/f2-registry-links` |
+| 2026-08-10 14:54 UTC | `b47521c` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -886,7 +886,12 @@ Duas consequências previstas, ambas aceitas:
 
 No mesmo movimento entraram os 8 links de políticas do RH enviados pelo usuário em 2026-08-07 (commit `bdf6046`), que já haviam substituído os 7 formulários Microsoft Forms — ver §6. O contador de `links.test.ts` foi de 36 para 38.
 
-## 12. Débito técnico
+### ADR-027 — `override` de `nanoid` contra um segundo aviso de severidade *high*
+**Data:** 2026-08-10 · **Status:** aceito · **altera o §3 e o §8**
+
+O job `audit` do CI (§8) reprovou o commit `b47521c` — que só alterava `links.ts`/`links.test.ts`/`PROJECT.md`, nada de dependências — por um aviso publicado *depois* do último `npm ci` local: [`GHSA-2v37-7h3g-55p8`](https://github.com/advisories/GHSA-2v37-7h3g-55p8), severidade **high**, em `nanoid <3.3.17` ("custom generators can loop indefinitely when size is zero"). Mesma classe de problema do [ADR-007](#adr-007--overrides-de-postcss-e-sharp-política-de-npm-audit): `nanoid@3.3.16` chega transitivo de `postcss@8.5.23` (já elevado por `overrides`), e `npm audit --audit-level=high --omit=dev` (o passo bloqueante da §8) reprova a árvore de produção com ele presente.
+
+Elevado por `overrides` para `3.3.17` — bump de patch, dentro do range `^3.3.6` que o próprio `postcss` declara como peer, então não força uma versão incompatível. `npm audit --audit-level=high --omit=dev` volta a reportar zero achados; `npm run verify` completo (100% de cobertura, build) passa sem nenhuma outra mudança. Diferença para o ADR-007: aquele caso foi achado numa auditoria proativa da F0.5; este apareceu como CI vermelho num PR que não tocava dependência nenhuma — o lembrete prático de que a auditoria "bloqueante" desta seção pode reprovar builds antigos a qualquer momento, sem nenhum código do projeto ter mudado. Não há ação de acompanhamento: a versão-alvo já resolve o aviso.
 
 | ID | Item | Prioridade | Contexto |
 |---|---|---|---|
@@ -922,6 +927,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-08-10 | `b47521c` | Portal de Chamados cross-listado no Depto. Químico e no RH |
 | 2026-08-07 | `bdf6046` | RH: trocar formulários de ajuda de custo por 8 links de políticas |
 | 2026-08-04 | `fce8f72` | docs: DT-017 — producao parou de acompanhar esta branch |
 | 2026-08-04 | `38e675e` | dev.bat libera a porta 3000; AlquimIA vira 5 GPTs no registry |
