@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-08-07 20:19 UTC | `fce8f72` | `feat/f2-registry-links` |
+| 2026-08-10 14:43 UTC | `bdf6046` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -53,7 +53,7 @@ Um agregador de links próprio da Bondmann — no espírito do Linktree — com 
 <!-- AUTO:overview:start -->
 | Setores | Setores ativos | Links | Domínios distintos |
 |---|---|---|---|
-| 7 | 6 | 36 | 7 |
+| 7 | 6 | 38 | 7 |
 <!-- AUTO:overview:end -->
 
 ### Princípios de design do projeto
@@ -286,7 +286,7 @@ Progresso: marque `[x]` ao concluir. O gate de saída é obrigatório — uma fa
 **Gate:** teste de contraste passando; cobertura ≥ 90% nos componentes. ✅ **concluída em 2026-07-27** — `src/lib/contrast.ts` reproduz a fórmula WCAG 2.2 e trava os pares do §2 (navy/branco, branco/navy e navy/verde passam AA; verde/branco reprova, ≈2.0:1, pinado por teste); `src/components/` (Logo, PatternBackground, PageShell, SectorCard, LinkButton) com 100% de cobertura, acima do piso de 90%. `<Logo>` não expõe `className`/`style` — safe-area e tamanho mínimo do manual não são sobrescrevíveis por prop, só por union fechado (`color`/`size`) com fallback seguro para valor hostil. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) e [DT-014](#12-débito-técnico).
 
 ### F2 — Registry de links
-- [x] `src/content/links.ts` com os 7 setores e 35 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27; Dashboard Comercial adicionado ao Comercial em 2026-07-28; os 5 GPTs da AlquimIA substituíram o hub único do Depto. Químico em 2026-08-04, [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora))
+- [x] `src/content/links.ts` com os 7 setores e 38 links (RH saiu de "em breve" — 7 links adicionados pelo usuário em 2026-07-27; Dashboard Comercial adicionado ao Comercial em 2026-07-28; os 5 GPTs da AlquimIA substituíram o hub único do Depto. Químico em 2026-08-04, [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora); os 8 links de políticas substituíram os formulários do RH e o Portal de Chamados passou a ser divulgado também pelo Depto. Químico e pelo RH em 2026-08-10, [ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh))
 - [x] `links-schema.ts`: HTTPS obrigatório, allowlist de domínios, denylist de encurtadores, slug único
 - [x] `npm run validate:links`
 - [x] Confirmar qual Google Form é *Feedback* e qual é *Alteração de Campanha* ([DT-002](#12-débito-técnico))
@@ -334,7 +334,7 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 36 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, e os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 38 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27) e o Portal de Chamados cross-listado também no Depto. Químico e no RH em 2026-08-10 ([ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh)). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
@@ -363,7 +363,7 @@ Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019]
 ### Controladoria — *Em breve*
 Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)).
 
-### Depto. Químico — 5 links
+### Depto. Químico — 6 links
 | Título | Destino |
 |---|---|
 | AlquimIA · Desengraxantes | ChatGPT (GPT) |
@@ -371,6 +371,7 @@ Pendência: link do aplicativo OnFly a confirmar ([DT-001](#12-débito-técnico)
 | AlquimIA · Tratamento de Superfícies | ChatGPT (GPT) |
 | AlquimIA · Limpeza e Higienização | ChatGPT (GPT) |
 | AlquimIA · Produtos de Uso Específico | ChatGPT (GPT) |
+| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
 
 Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` — um hub que só reunia estes mesmos GPTs. Ver [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora).
 
@@ -385,7 +386,7 @@ Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` �
 | Mídia Compartilhada · Solicitação de Alteração de Campanha | Google Forms |
 | Mídia Compartilhada · Criativos | Google Drive (pasta) |
 
-### RH — 8 links
+### RH — 9 links
 | Título | Destino |
 |---|---|
 | DB022 · Plano de Ajuda de Custo | SharePoint (PDF) |
@@ -396,6 +397,7 @@ Os cinco substituíram, em 2026-08-04, o link único `linktr.ee/gptsbondmann` �
 | DB038 · Programa de Incentivo à Educação 2026 | SharePoint (PDF) |
 | Política de Férias | SharePoint (PDF) |
 | Política de Viagens | SharePoint (PDF) |
+| Portal de Chamados | `portal-chamados-bondmann-production.up.railway.app/workspace` |
 
 Os 8 links de políticas substituíram, em 2026-08-07, os 7 formulários Microsoft Forms (ajuda de custo, contratação, alteração de cargo) enviados pelo usuário em 2026-07-27. O domínio `forms.cloud.microsoft` saiu da allowlist do schema por não ter mais nenhum link ativo usando-o.
 
@@ -407,11 +409,11 @@ Os 8 links de políticas substituíram, em 2026-08-07, os 7 formulários Microso
 
 ### Links divulgados por mais de um setor
 
-Duas URLs aparecem em dois setores de propósito — não é duplicação acidental:
+Duas URLs aparecem em mais de um setor de propósito — não é duplicação acidental:
 
 | Link | Setores | Motivo |
 |---|---|---|
-| Portal de Chamados | Marketing, TI | Cada setor o divulga como porta de entrada própria |
+| Portal de Chamados | Marketing, TI, Depto. Químico, RH | Cada setor o divulga como porta de entrada própria — ver [ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh) |
 | Dashboard Comercial | Comercial, TI | Mantido pela TI, consumido pelo Comercial — quem procura não deveria precisar saber de quem é a infraestrutura |
 
 A URL é uma constante única em `links.ts` nos dois casos, e `links.test.ts` falha se o mesmo `id` aparecer com URLs diferentes entre setores: o risco real é atualizar uma cópia e esquecer a outra. Na busca da home, o link cross-listado aparece **uma vez só**, no setor de maior pontuação ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)).
@@ -870,6 +872,20 @@ O Depto. Químico tinha um link só: `linktr.ee/gptsbondmann`, um hub que reunia
 
 O contador do teste de sanidade (`src/content/links.test.ts`) foi de 31 para 35 links, e é ele que amarra o inventário do §6 ao registry: alterar um sem o outro quebra o CI.
 
+### ADR-026 — Portal de Chamados cross-listado também no Depto. Químico e no RH
+**Data:** 2026-08-10 · **Status:** aceito · **altera o §6**
+
+A pedido do usuário, o Portal de Chamados passou a aparecer também no Depto. Químico e no RH — antes só Marketing e TI o divulgavam. A URL continua sendo a constante `PORTAL_DE_CHAMADOS` de `links.ts`, agora referenciada por quatro setores: nenhuma cópia literal, então atualizar a URL continua sendo uma linha só, e `links.test.ts` segue falhando se o mesmo `id` aparecer com URLs diferentes.
+
+Vale o mesmo raciocínio já registrado no §6 para os dois setores originais: quem procura abrir um chamado não deveria precisar saber qual setor "é dono" do portal. A alternativa — um setor único "Serviços" reunindo o que é transversal — foi descartada porque criaria uma categoria que não corresponde a nenhum departamento real, e o §1 organiza o site por setor justamente para que quem chega saiba onde procurar.
+
+Duas consequências previstas, ambas aceitas:
+
+- **A busca da home mostra o link uma vez só**, no setor de maior pontuação ([ADR-021](#adr-021--busca-client-side-na-home-entra-no-escopo)) — o comportamento já existia para os dois setores anteriores e não muda com quatro.
+- **As taglines não foram reescritas.** "Ferramentas de IA aplicadas à química" e "Políticas e benefícios" descrevem o que cada setor tem de próprio; o portal é transversal, e listá-lo em toda tagline diluiria a frase que existe para diferenciar os setores na home.
+
+No mesmo movimento entraram os 8 links de políticas do RH enviados pelo usuário em 2026-08-07 (commit `bdf6046`), que já haviam substituído os 7 formulários Microsoft Forms — ver §6. O contador de `links.test.ts` foi de 36 para 38.
+
 ## 12. Débito técnico
 
 | ID | Item | Prioridade | Contexto |
@@ -906,6 +922,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-08-07 | `bdf6046` | RH: trocar formulários de ajuda de custo por 8 links de políticas |
 | 2026-08-04 | `fce8f72` | docs: DT-017 — producao parou de acompanhar esta branch |
 | 2026-08-04 | `38e675e` | dev.bat libera a porta 3000; AlquimIA vira 5 GPTs no registry |
 | 2026-07-28 | `c784aaa` | recalibrar categories:performance também — mesma variação já documentada no ADR-023 |

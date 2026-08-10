@@ -41,9 +41,9 @@ export interface Sector {
 }
 
 /**
- * O Portal de Chamados é intencionalmente listado em Marketing e em TI: os dois
- * setores o divulgam como porta de entrada própria. Mesma URL, dois pontos de
- * acesso — não é duplicação acidental.
+ * O Portal de Chamados é intencionalmente listado em Marketing, TI, Depto.
+ * Químico e RH: cada setor o divulga como porta de entrada própria. Mesma URL,
+ * quatro pontos de acesso — não é duplicação acidental.
  */
 const PORTAL_DE_CHAMADOS = 'https://portal-chamados-bondmann-production.up.railway.app/workspace';
 
@@ -196,6 +196,11 @@ export const sectors: readonly Sector[] = [
         title: 'AlquimIA · Produtos de Uso Específico',
         href: 'https://chatgpt.com/g/g-6a32b355a7a88191995be0d96c415da1-alquimia-uso-especifico',
       },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
     ],
   },
 
@@ -300,6 +305,11 @@ export const sectors: readonly Sector[] = [
         id: 'politica-viagens',
         title: 'Política de Viagens',
         href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQBbw2zuNL1rQba289lTJ5l9AZC3Aj0-SlQ309V3HyG90PI?e=Lm3bfT',
+      },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
       },
     ],
   },

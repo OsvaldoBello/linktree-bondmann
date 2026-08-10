@@ -10,15 +10,16 @@ import { sectors } from './links';
  * abaixo cobrem invariantes de conteúdo que o schema não modela.
  */
 describe('registry de setores', () => {
-  it('bate com o inventário do PROJECT.md §6: 7 setores, 36 links', () => {
+  it('bate com o inventário do PROJECT.md §6: 7 setores, 38 links', () => {
     expect(sectors).toHaveLength(7);
-    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(36);
+    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(38);
   });
 
   it('mantém a mesma URL para os links divulgados por mais de um setor', () => {
-    // Portal de Chamados (Marketing + TI) e Dashboard Comercial (Comercial +
-    // TI) são cross-listados de propósito. O risco real é uma das cópias ser
-    // atualizada e a outra não — este teste transforma isso em falha de CI.
+    // Portal de Chamados (Marketing + TI + Depto. Químico + RH) e Dashboard
+    // Comercial (Comercial + TI) são cross-listados de propósito. O risco real
+    // é uma das cópias ser atualizada e a outra não — este teste transforma
+    // isso em falha de CI.
     const hrefsById = new Map<string, Set<string>>();
     for (const sector of sectors) {
       for (const link of sector.links) {
