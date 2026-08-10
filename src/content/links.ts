@@ -6,12 +6,19 @@
  *   - Somente `https://`. Encurtadores são proibidos.
  *   - O `slug` do setor entra na URL pública e é PERMANENTE. Renomear quebra
  *     links já compartilhados — exige redirect e entrada no ADR.
+ *   - Os setores ficam em ordem alfabética por `name` (pt-BR) — a ordem deste
+ *     array é a ordem exibida na home. Travado por teste em `links.test.ts`.
  *
- * Na fase F2 este arquivo passa a ser validado por `src/lib/links-schema.ts`
- * (Zod) em tempo de build. Até lá, os tipos abaixo são a única garantia.
+ * Validado por `../lib/links-schema` (Zod) a cada import de `sectors` — um
+ * link malicioso ou com typo derruba o build antes de chegar a produção.
+ * Import relativo (não `@/lib/...`) de propósito: `scripts/validate-links.ts`
+ * executa este arquivo direto pelo Node, sem resolução de alias do bundler.
  *
- * Origem dos dados: "Links externos.docx" (Bondmann).
+ * Origem dos dados: "Links externos.docx" (Bondmann), mais os links do RH
+ * enviados diretamente pelo usuário em 2026-07-27.
  */
+
+import { assertValidSectors } from '../lib/links-schema.ts';
 
 export type SectorStatus = 'active' | 'coming-soon';
 
@@ -34,104 +41,33 @@ export interface Sector {
 }
 
 /**
- * O Portal de Chamados é intencionalmente listado em Marketing e em TI: os dois
- * setores o divulgam como porta de entrada própria. Mesma URL, dois pontos de
- * acesso — não é duplicação acidental.
+ * O Portal de Chamados é intencionalmente listado em Marketing, TI, Depto.
+ * Químico e RH: cada setor o divulga como porta de entrada própria. Mesma URL,
+ * quatro pontos de acesso — não é duplicação acidental.
  */
 const PORTAL_DE_CHAMADOS = 'https://portal-chamados-bondmann-production.up.railway.app/workspace';
 
+/**
+ * Mesmo caso do Portal de Chamados: o Dashboard Comercial é mantido pela TI,
+ * mas quem o consome no dia-a-dia é o Comercial. Aparece nos dois setores, com
+ * a mesma URL — quem procura o dashboard não deveria precisar saber de quem é
+ * a infraestrutura por trás dele.
+ */
+const DASHBOARD_COMERCIAL = 'https://dashboard-bondmann-production.up.railway.app/';
+
 export const sectors: readonly Sector[] = [
-  {
-    slug: 'marketing',
-    name: 'Marketing',
-    status: 'active',
-    tagline: 'Chamados, campanhas e mídia compartilhada',
-    links: [
-      {
-        id: 'portal-chamados',
-        title: 'Portal de Chamados',
-        href: PORTAL_DE_CHAMADOS,
-      },
-      {
-        id: 'midia-solicitacao-entrada',
-        title: 'Solicitação de Entrada',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSeKM6Zf156lvIcJkHTx-kYyqd8DmEDoHB6Sv_x1Chbm9rtaPA/viewform',
-      },
-      {
-        id: 'midia-detalhes-campanha',
-        title: 'Detalhes da Campanha',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSf3pXNjoc4XrYhGUcvzIh6InowH8CBiqkCPGuHp_djItndTpg/viewform',
-      },
-      {
-        id: 'midia-planilhas-leads',
-        title: 'Planilhas de Leads',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/spreadsheets/d/1JpBSINVkN9K8EBcgbzq3TWdb-fudAemlZaymV7-orMQ/edit?gid=1984125120#gid=1984125120',
-      },
-      {
-        // DT-002: mapeamento a confirmar — ver PROJECT.md §12.
-        id: 'midia-feedback',
-        title: 'Formulário de Feedback',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLSejna3J989_DUDwvXOnS1nOYe7PnSRS3CI_4FRIzcyaDy7qWA/viewform',
-      },
-      {
-        // DT-002: mapeamento a confirmar — ver PROJECT.md §12.
-        id: 'midia-alteracao-campanha',
-        title: 'Solicitação de Alteração de Campanha',
-        description: 'Mídia Compartilhada',
-        href: 'https://docs.google.com/forms/d/e/1FAIpQLScTwSUwyVE4Rvn5EEvEN5VnU7muZHLcn9N09ywrjeJHm98kzA/viewform',
-      },
-      {
-        id: 'midia-criativos',
-        title: 'Criativos',
-        description: 'Mídia Compartilhada',
-        href: 'https://drive.google.com/drive/folders/1LcuhAMDepDLf2qASl94uxrSDeh_MKREh?usp=sharing',
-      },
-    ],
-  },
-
-  {
-    slug: 'ti',
-    name: 'TI',
-    status: 'active',
-    tagline: 'Dashboards e suporte técnico',
-    links: [
-      {
-        id: 'dashboard-comercial',
-        title: 'Dashboard Comercial',
-        href: 'https://dashboard-bondmann-production.up.railway.app/',
-      },
-      {
-        id: 'portal-chamados',
-        title: 'Portal de Chamados',
-        href: PORTAL_DE_CHAMADOS,
-      },
-    ],
-  },
-
-  {
-    slug: 'compras',
-    name: 'Compras',
-    status: 'active',
-    tagline: 'Fornecedores e logística',
-    links: [
-      {
-        id: 'transportadoras-cif',
-        title: 'Transportadoras Habilitadas para Frete CIF',
-        href: 'https://bondmannquimica.sharepoint.com/:x:/s/comite.gestao/IQB0rE0ILcgcTKd0LFYVm7EsAYv8wIcWhTOgdYgqEZOogYU?e=uOaSPm',
-      },
-    ],
-  },
-
   {
     slug: 'comercial',
     name: 'Comercial',
     status: 'active',
-    tagline: 'Cotações, cadastros e formulários de campo',
+    tagline: 'Dashboard, cotações, cadastros e formulários de campo',
     links: [
+      {
+        id: 'dashboard-comercial',
+        title: 'Dashboard Comercial',
+        description: 'Indicadores de vendas',
+        href: DASHBOARD_COMERCIAL,
+      },
       {
         id: 'cotacao-pj',
         title: 'Solicitação de Cotação PJ',
@@ -204,26 +140,17 @@ export const sectors: readonly Sector[] = [
   },
 
   {
-    slug: 'departamento-quimico',
-    name: 'Depto. Químico',
+    slug: 'compras',
+    name: 'Compras',
     status: 'active',
-    tagline: 'Ferramentas de IA aplicadas à química',
+    tagline: 'Fornecedores e logística',
     links: [
       {
-        id: 'alquimia',
-        title: 'AlquimIA',
-        description: 'Assistentes de IA da Bondmann',
-        href: 'https://linktr.ee/gptsbondmann',
+        id: 'transportadoras-cif',
+        title: 'Transportadoras Habilitadas para Frete CIF',
+        href: 'https://bondmannquimica.sharepoint.com/:x:/s/comite.gestao/IQB0rE0ILcgcTKd0LFYVm7EsAYv8wIcWhTOgdYgqEZOogYU?e=uOaSPm',
       },
     ],
-  },
-
-  {
-    slug: 'rh',
-    name: 'RH',
-    status: 'coming-soon',
-    tagline: 'Em breve',
-    links: [],
   },
 
   {
@@ -234,4 +161,177 @@ export const sectors: readonly Sector[] = [
     tagline: 'Em breve',
     links: [],
   },
+
+  {
+    slug: 'departamento-quimico',
+    name: 'Depto. Químico',
+    status: 'active',
+    tagline: 'Ferramentas de IA aplicadas à química',
+    // Os cinco GPTs da AlquimIA substituíram, em 2026-08-04, o hub único no
+    // linktr.ee que apontava para eles: um salto a menos para quem já sabe de
+    // qual linha precisa. Ver ADR-025.
+    links: [
+      {
+        id: 'alquimia-desengraxantes',
+        title: 'AlquimIA · Desengraxantes',
+        href: 'https://chatgpt.com/g/g-6a038e60c6d481919ae59b4ee52741f2-alquimia-desengraxantes',
+      },
+      {
+        id: 'alquimia-fluidos-lubrificantes',
+        title: 'AlquimIA · Fluidos e Lubrificantes',
+        href: 'https://chatgpt.com/g/g-6a04e37ff97081919701b5202ccf9468-alquimia-fluidos-e-lubrificantes',
+      },
+      {
+        id: 'alquimia-tratamento-superficies',
+        title: 'AlquimIA · Tratamento de Superfícies',
+        href: 'https://chatgpt.com/g/g-6a04e536a5348191bb5e53ec9b9690f3-alquimia-tratamento-de-superficies',
+      },
+      {
+        id: 'alquimia-limpeza-higienizacao',
+        title: 'AlquimIA · Limpeza e Higienização',
+        href: 'https://chatgpt.com/g/g-6a32a16ffa4c819192f221b7ddf158bb-alquimia-limpeza-e-higienizacao',
+      },
+      {
+        id: 'alquimia-uso-especifico',
+        title: 'AlquimIA · Produtos de Uso Específico',
+        href: 'https://chatgpt.com/g/g-6a32b355a7a88191995be0d96c415da1-alquimia-uso-especifico',
+      },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+    ],
+  },
+
+  {
+    slug: 'marketing',
+    name: 'Marketing',
+    status: 'active',
+    tagline: 'Chamados, campanhas e mídia compartilhada',
+    links: [
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+      {
+        id: 'midia-solicitacao-entrada',
+        title: 'Solicitação de Entrada',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSeKM6Zf156lvIcJkHTx-kYyqd8DmEDoHB6Sv_x1Chbm9rtaPA/viewform',
+      },
+      {
+        id: 'midia-detalhes-campanha',
+        title: 'Detalhes da Campanha',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSf3pXNjoc4XrYhGUcvzIh6InowH8CBiqkCPGuHp_djItndTpg/viewform',
+      },
+      {
+        id: 'midia-planilhas-leads',
+        title: 'Planilhas de Leads',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/spreadsheets/d/1JpBSINVkN9K8EBcgbzq3TWdb-fudAemlZaymV7-orMQ/edit?gid=1984125120#gid=1984125120',
+      },
+      {
+        id: 'midia-feedback',
+        title: 'Formulário de Feedback',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLSejna3J989_DUDwvXOnS1nOYe7PnSRS3CI_4FRIzcyaDy7qWA/viewform',
+      },
+      {
+        id: 'midia-alteracao-campanha',
+        title: 'Solicitação de Alteração de Campanha',
+        description: 'Mídia Compartilhada',
+        href: 'https://docs.google.com/forms/d/e/1FAIpQLScTwSUwyVE4Rvn5EEvEN5VnU7muZHLcn9N09ywrjeJHm98kzA/viewform',
+      },
+      {
+        id: 'midia-criativos',
+        title: 'Criativos',
+        description: 'Mídia Compartilhada',
+        href: 'https://drive.google.com/drive/folders/1LcuhAMDepDLf2qASl94uxrSDeh_MKREh?usp=sharing',
+      },
+    ],
+  },
+
+  {
+    slug: 'rh',
+    name: 'RH',
+    status: 'active',
+    tagline: 'Políticas e benefícios',
+    links: [
+      {
+        id: 'db022-plano-ajuda-custo',
+        title: 'Plano de Ajuda de Custo',
+        description: 'DB022',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQDK75SG_1WaS7oQhwW-_0UeAZMEU6ILGhJbKH-Qumjx_Cg?e=ofxBw7',
+      },
+      {
+        id: 'tabela-beneficios-ubd',
+        title: 'Tabela de Benefícios',
+        description: 'Valorização do Autodesenvolvimento (UBD)',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQB1eiHt4JE1RqUH9k-YxcS0AaHAtTGcgw-eNBU9AhFJNbo?e=wJkgh7',
+      },
+      {
+        id: 'db020-politica-comercial-financeira',
+        title: 'Política Comercial e Financeira - Representantes',
+        description: 'DB020',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQAXuTmAj3vCSbjwfIUE1pYjAaInUQ4wB3OkAtHwpjq_Ys4?e=NydiIe',
+      },
+      {
+        id: 'db032-tabela-brindes',
+        title: 'Tabela de Brindes',
+        description: 'DB032',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQCY6x-D5Bx-Rbozf4dMUU7kAQKiytXmCr6eyXm1LKbsQ5s?e=U4PJAp',
+      },
+      {
+        id: 'db034-politica-adequacao-contratual',
+        title: 'Política de Adequação Contratual',
+        description: 'DB034',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQDxsaaM2hcDSLksPYmXySQaAWiCoUzgGvIanFCNh7ZdXNA?e=VJ7UA4',
+      },
+      {
+        id: 'db038-programa-incentivo-educacao-2026',
+        title: 'Programa de Incentivo à Educação 2026 (CLT)',
+        description: 'DB038',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQBX69HIZHE9SLTXfX5DwL3fARknU-DCr28_RVp2R-iBu4c?e=uBwCqo',
+      },
+      {
+        id: 'politica-ferias',
+        title: 'Política de Férias (CLT)',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQCXanpYStSTTq1llexBgQPeAbHXSTcHD8x5kmqzvGHfT3U?e=lAsBM4',
+      },
+      {
+        id: 'politica-viagens',
+        title: 'Política de Viagens (CLT)',
+        href: 'https://bondmannquimica.sharepoint.com/:b:/s/RHeGestodeVendas/IQBbw2zuNL1rQba289lTJ5l9AZC3Aj0-SlQ309V3HyG90PI?e=Lm3bfT',
+      },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+    ],
+  },
+
+  {
+    slug: 'ti',
+    name: 'TI',
+    status: 'active',
+    tagline: 'Dashboards e suporte técnico',
+    links: [
+      {
+        id: 'dashboard-comercial',
+        title: 'Dashboard Comercial',
+        href: DASHBOARD_COMERCIAL,
+      },
+      {
+        id: 'portal-chamados',
+        title: 'Portal de Chamados',
+        href: PORTAL_DE_CHAMADOS,
+      },
+    ],
+  },
 ];
+
+assertValidSectors(sectors);

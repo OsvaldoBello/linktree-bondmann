@@ -2,16 +2,42 @@ import { describe, expect, it } from 'vitest';
 import { sectors } from './links';
 
 /**
- * Testes de sanidade do registry — F0.
+ * Testes de sanidade do registry.
  *
- * Aqui só se verifica a forma do que já existe. A validação de verdade (HTTPS
- * obrigatório, allowlist de domínios, denylist de encurtadores) é o schema Zod
- * da F2, e roda em build.
+ * A validação de verdade (HTTPS obrigatório, allowlist de domínios, denylist
+ * de encurtadores, slug/id únicos) é `src/lib/links-schema.ts` — roda a cada
+ * import de `sectors` (ver final de `links.ts`), inclusive aqui. Os testes
+ * abaixo cobrem invariantes de conteúdo que o schema não modela.
  */
 describe('registry de setores', () => {
-  it('bate com o inventário do PROJECT.md §6: 7 setores, 23 links', () => {
+  it('bate com o inventário do PROJECT.md §6: 7 setores, 38 links', () => {
     expect(sectors).toHaveLength(7);
-    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(23);
+    expect(sectors.flatMap((sector) => sector.links)).toHaveLength(38);
+  });
+
+  it('mantém a mesma URL para os links divulgados por mais de um setor', () => {
+    // Portal de Chamados (Marketing + TI + Depto. Químico + RH) e Dashboard
+    // Comercial (Comercial + TI) são cross-listados de propósito. O risco real
+    // é uma das cópias ser atualizada e a outra não — este teste transforma
+    // isso em falha de CI.
+    const hrefsById = new Map<string, Set<string>>();
+    for (const sector of sectors) {
+      for (const link of sector.links) {
+        const hrefs = hrefsById.get(link.id) ?? new Set<string>();
+        hrefs.add(link.href);
+        hrefsById.set(link.id, hrefs);
+      }
+    }
+
+    for (const [id, hrefs] of hrefsById) {
+      expect(hrefs.size, `o id "${id}" aparece com URLs diferentes entre setores`).toBe(1);
+    }
+  });
+
+  it('está em ordem alfabética por nome (pt-BR) — é a ordem exibida na home', () => {
+    const names = sectors.map((sector) => sector.name);
+    const ordered = [...names].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    expect(names).toEqual(ordered);
   });
 
   it('tem slug único por setor', () => {
