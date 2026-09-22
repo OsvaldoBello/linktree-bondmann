@@ -124,17 +124,22 @@ export const sectors: readonly Sector[] = [
         href: 'https://bondmannquimica.sharepoint.com/sites/bd.representantes/Shared%20Documents/General/Formul%C3%A1rios%20Comerciais/2026/CADASTRO%20FILIAL.pdf',
       },
       {
-        id: 'ficha-cadastral-clientes',
-        title: 'Ficha Cadastral para Clientes',
-        href: 'https://bondmannquimica.sharepoint.com/:w:/s/bd.representantes/IQCz4gVq0yHCRKKsDtiwlryoAYTxkTFSckctiYh_f4U8EtM?e=Rvcynu',
-      },
-      {
         // O docx trazia esta URL com `&amp;` (escape de XML); aqui está com `&`
         // literal, como o SharePoint espera.
         id: 'fb037-relacao-amostras',
         title: 'Relação de Amostras',
         description: 'FB037/10',
         href: 'https://bondmannquimica.sharepoint.com/:w:/r/sites/bd.representantes/_layouts/15/Doc.aspx?action=edit&sourcedoc=%7Bed14340c-ad82-4121-ae80-142392adb6a4%7D&wdExp=TEAMS-TREATMENT&web=1&TeamsCID=338ba1e8-644b-45bb-a641-9534c4c8ced2',
+      },
+      {
+        id: 'envio-ficha-cadastral-cpf',
+        title: 'Envio de Ficha Cadastral CPF',
+        href: 'https://forms.ploomes.com/form/105dea6422664fbd9fe72b4018c5f0d9',
+      },
+      {
+        id: 'envio-ficha-cadastral-cnpj',
+        title: 'Envio de Ficha Cadastral CNPJ',
+        href: 'https://forms.ploomes.com/form/419e291d41a14295a54788fe46ecc95a',
       },
     ],
   },
