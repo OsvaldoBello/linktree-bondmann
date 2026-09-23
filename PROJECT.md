@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-09-23 19:50 UTC | `b4643ac` | `feat/f2-registry-links` |
+| 2026-09-23 19:59 UTC | `ed2f09f` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -584,7 +584,7 @@ Orçamento que **falha o CI** quando estourado:
 
 | Bundle | Tamanho | Orçamento |
 |---|---|---|
-| JS compartilhado (todas as rotas) | 110.9 KB ✅ | 120000 |
+| JS compartilhado (todas as rotas) | 108.6 KB ✅ | 120000 |
 <!-- AUTO:bench:end -->
 
 O histórico fica versionado no git, tornando qualquer regressão visível no diff.
@@ -957,6 +957,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-09-23 | `ed2f09f` | security: bumps de Next.js, sharp e nanoid; ADR-029 e DT-012 |
 | 2026-09-22 | `b4643ac` | Comercial: adicionar fichas cadastrais CPF/CNPJ e remover ficha para clientes |
 | 2026-08-10 | `d5a931b` | RH: marcar (CLT) nos títulos de Educação, Férias e Viagens |
 | 2026-08-10 | `87b4379` | fix: busca não atribui mais um setor a link cross-listado |
