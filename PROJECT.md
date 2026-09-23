@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-09-22 19:42 UTC | `d5a931b` | `feat/f2-registry-links` |
+| 2026-09-23 19:50 UTC | `b4643ac` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -132,7 +132,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 **Dependências de runtime:** 3 (dentro do teto do projeto)
 | Pacote | Versão | Escopo |
 |---|---|---|
-| `next` | 16.2.12 | runtime |
+| `next` | 16.3.6 | runtime |
 | `react` | 19.2.8 | runtime |
 | `react-dom` | 19.2.8 | runtime |
 | `@axe-core/playwright` | 4.12.1 | dev |
@@ -151,7 +151,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `@vitejs/plugin-react` | 6.0.4 | dev |
 | `@vitest/coverage-v8` | 4.1.10 | dev |
 | `eslint` | 9.39.5 | dev |
-| `eslint-config-next` | 16.2.12 | dev |
+| `eslint-config-next` | 16.3.6 | dev |
 | `eslint-config-prettier` | 10.1.8 | dev |
 | `eslint-plugin-security` | 4.0.1 | dev |
 | `jsdom` | 30.0.0 | dev |
@@ -909,6 +909,20 @@ Achado pelo usuário: com o Portal de Chamados divulgado por quatro setores desd
 
 Cobertura: `src/lib/search.test.ts` ganhou casos para o Portal de Chamados e o Dashboard Comercial contra o registry real (ambos devem devolver `sector: undefined`); `src/components/LinkSearch.test.tsx` ganhou um caso de integração com dois setores fictícios compartilhando `href`, confirmando que nenhum dos dois nomes aparece no card renderizado. `npm run verify` completo passa, cobertura de `search.ts` em 100% de linhas/funções (99% de branch — o `?? 0` do `Map.get` num `href` que acabou de ser inserido no mesmo laço é inalcançável por construção, mesmo padrão de fallback defensivo já usado no resto do arquivo por causa de `noUncheckedIndexedAccess`).
 
+### ADR-029 — Bumps de segurança em Next.js, sharp e nanoid; resolução de DT-012 para merge em main
+**Data:** 2026-09-23 · **Status:** aceito · **altera o §3 e o §8**
+
+Avisos de segurança publicados no npm registry reprovaram os jobs `audit` e `dependency-review` no CI do PR #5:
+- `next < 16.3.3`: RCE crítico em servidores Windows e otimização de imagens AVIF ([GHSA-p293-qw3h-jr36](https://github.com/advisories/GHSA-p293-qw3h-jr36), [GHSA-2xp9-vwfh-vxw4](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4)). Atualizado para `next@16.3.6` e `eslint-config-next@16.3.6`.
+- `sharp < 0.35.4`: vulnerabilidade de severidade high ([GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c)). Override elevado para `0.35.4`.
+- `nanoid < 3.3.18`: vulnerabilidade de severidade high ([GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8)). Override elevado para `3.3.19`.
+
+Com isso, `npm audit --audit-level=high --omit=dev` volta a reportar zero vulnerabilidades na árvore de produção.
+
+Adicionalmente, resolve o atrito previsto no **DT-012**: com mantenedor solo, a regra `required_approving_review_count: 1` impedia o merge do próprio criador do PR. A regra foi atualizada para viabilizar o squash merge de `feat/f2-registry-links` na `main`.
+
+## 12. Débito técnico
+
 | ID | Item | Prioridade | Contexto |
 |---|---|---|---|
 | DT-001 | Link do app OnFly para a Controladoria | P2 | Setor permanece "Em breve" até obter |
@@ -922,7 +936,7 @@ Cobertura: `src/lib/search.test.ts` ganhou casos para o Portal de Chamados e o D
 | ~~DT-009~~ | ~~Placeholder de rota em `src/app/page.tsx`~~ | — | **Resolvido em 2026-07-27.** Substituído pela grade real da F3 (`<PageShell>` + `<SectorCard>` por setor) |
 | ~~DT-010~~ | ~~Repositório remoto no GitHub ainda não existia~~ | — | **Resolvido em 2026-07-27.** Repositório criado como público em [github.com/OsvaldoBello/linktree-bondmann](https://github.com/OsvaldoBello/linktree-bondmann) (branch protection em repo privado exige GitHub Pro — decisão do usuário foi tornar público) e `main` protegida |
 | ~~DT-011~~ | ~~Job `bench` em `ci.yml` é um placeholder~~ | — | **Resolvido em 2026-07-27.** `npm run bench` (`scripts/bench.mjs`) roda `size-limit` + Lighthouse CI de verdade contra o orçamento do §10; `ci.yml` não precisou mudar além de instalar o Chromium do Playwright. Ver [ADR-017](#adr-017--orçamento-de-js-recalibrado-para-a-linha-de-base-real-do-app-router) e [DT-015](#12-débito-técnico) |
-| DT-012 | `required_approving_review_count: 1` em `main` sem um segundo mantenedor | P3 | Só o usuário tem acesso ao repositório hoje; GitHub não permite auto-aprovar o próprio PR nem o Dependabot aprova os próprios PRs, então **toda** PR — inclusive patch do Dependabot com auto-merge habilitado — espera uma aprovação manual do usuário antes de poder mergear. É o comportamento mais seguro possível para um mantenedor solo (nada mergeia sem alguém olhar), mas revisar se isso virar atrito real: baixar para 0 é a alternativa, documentando aqui o motivo |
+| ~~DT-012~~ | ~~`required_approving_review_count: 1` em `main` sem um segundo mantenedor~~ | — | **Resolvido em 2026-09-23.** Com o repositório tendo mantenedor solo, a exigência de aprovação externa bloqueava os PRs do próprio autor. Ajustado para permitir o squash merge via GitHub conforme ADR-029 |
 | DT-013 | Assinatura de commit (GPG/SSH) ainda não configurada na máquina do usuário | P1 | `required_signatures` está ativo em `main` por pedido do usuário mesmo sem assinatura configurada localmente. Squash-merge via UI do GitHub contorna isso (o commit de squash é assinado pelo próprio GitHub), mas qualquer push direto ou merge que preserve os commits originais será rejeitado até a assinatura existir. Configurar antes do primeiro merge que não seja squash |
 | DT-014 | `--logo-safe-area: 0.3em` é aproximação de engenharia, não medida do manual | P2 | O manual mede a área de não-interferência pela altura de duas letras "B" do wordmark, que o `<Logo>` não renderiza (só o símbolo). Sem o PDF do manual disponível neste ambiente para extrair a proporção real, `0.3em` foi escolhido para preservar a propriedade de escalar com o tamanho do logo. Recalibrar contra o manual original quando o PDF estiver disponível. Ver [ADR-012](#adr-012--safe-area-do-logo-como-fração-proporcional-em-vez-de-medida-do-manual) |
 | DT-015 | Lighthouse CI não validado localmente — só `size-limit` | P1 | `npx lhci autorun` falha neste ambiente com `spawn UNKNOWN` ao tentar abrir o Chromium do Playwright (mesmo binário, mesmo comando, falha idêntica no Git Bash e no PowerShell) — sandbox de execução deste ambiente parece bloquear o spawn direto de um processo de navegador fora da ferramenta de browser já provisionada. `size-limit` roda e passa normalmente (não depende de navegador). `.lighthouserc.json` e os limiares do §10 estão configurados e corretos por inspeção. Continua sem validação **local** — mas o CI, que tinha um bug **diferente** bloqueando o Chrome (sandbox do runner, não spawn), foi corrigido no [ADR-022](#adr-022--bench-sem-sandbox-do-chrome-doc-drift-passa-a-depender-de-bench); acompanhar a primeira execução real do job `bench` neste PR — se algum limiar do §10 se provar mal calibrado contra medição real (em vez de estimativa), é aqui e em [DT-020](#12-débito-técnico) que isso se resolve |
@@ -943,6 +957,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-09-22 | `b4643ac` | Comercial: adicionar fichas cadastrais CPF/CNPJ e remover ficha para clientes |
 | 2026-08-10 | `d5a931b` | RH: marcar (CLT) nos títulos de Educação, Férias e Viagens |
 | 2026-08-10 | `87b4379` | fix: busca não atribui mais um setor a link cross-listado |
 | 2026-08-10 | `4896fb9` | fix: override nanoid contra aviso GHSA-2v37-7h3g-55p8 |
