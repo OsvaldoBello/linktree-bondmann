@@ -1,0 +1,37 @@
+/**
+ * Tokens do Manual de Utilização e Aplicação de Marca (Novo Design Brasil,
+ * julho/2014) — ver PROJECT.md §2. Fonte única de verdade para cor e para as
+ * regras dimensionais do logotipo. Nenhum componente deve declarar essas cores
+ * ou medidas soltas.
+ */
+
+@theme {
+  /* pág. 4 do manual. `#99C76B` é o hex do ativo vetorial oficial do
+   * logotipo, não o `#ACC76B` que a conversão Pantone→CMYK do manual sugere —
+   * ver ADR-001. Gera as utilities `bg-bond-navy`, `text-bond-navy` etc. */
+  --color-bond-navy: #2e466f;
+  --color-bond-green: #99c76b;
+  /* Equivalente de impressão do Pantone 367 C — não usar em tela. */
+  --color-bond-green-print: #acc76b;
+
+  /* Preenchido por next/font em layout.tsx (ADR-002: Fira Sans como proxy da
+   * família Info, que não tem webfont livre). */
+  --font-sans: var(--font-fira-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  /* Redução mínima do símbolo sem byline (manual: 20mm vertical / 15mm
+   * horizontal). Unidade `mm` deliberada: a definição CSS de 1in = 25.4mm
+   * torna a conversão para px exata, sem arredondamento manual. A altura é a
+   * restrição que amarra — para o `viewBox` 1582.88×1742.56 do símbolo, uma
+   * altura de 20mm já implica uma largura acima do piso de 15mm. */
+  --logo-min-height: 20mm;
+  --logo-min-width: 15mm;
+
+  /* Área de não-interferência do manual: altura de duas letras "B"
+   * maiúsculas de "BONDMANN". Como o componente <Logo> renderiza só o símbolo
+   * (sem wordmark), não há cap-height própria para medir; `0.3em` é uma
+   * aproximação proporcional (escala com o tamanho do logo via font-size do
+   * wrapper) pendente de calibração contra o manual original — ver DT-014. */
+  --logo-safe-area: 0.3em;
+}

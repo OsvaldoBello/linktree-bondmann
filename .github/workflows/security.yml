@@ -84,7 +84,9 @@ jobs:
       - name: Instalar Semgrep (versão fixada)
         run: pip install --no-cache-dir "semgrep==1.171.0"
       - name: Semgrep — regras React/Next (dangerouslySetInnerHTML, target=_blank sem rel, redirect aberto)
-        run: semgrep scan --config auto --error --metrics=off
+        # `--config auto` exige métricas ligadas (telemetria para o registry);
+        # usamos rulesets explícitos em vez disso, sem enviar nada a terceiros.
+        run: semgrep scan --config p/react --config p/typescript --config p/security-audit --error --metrics=off
 
   zizmor:
     name: zizmor

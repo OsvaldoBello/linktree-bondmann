@@ -16,6 +16,10 @@
     "isolatedModules": true,
     "incremental": true,
     "noEmit": true,
+    /* F2: `scripts/validate-links.ts` roda direto pelo Node (que despe tipos
+       nativamente na v24, mas exige extensão explícita em import relativo).
+       Só válido com `noEmit`. */
+    "allowImportingTsExtensions": true,
     /* Rigor — PROJECT.md §3. O registry de links é tipado ponta a ponta;
        afrouxar qualquer uma destas flags exige entrada no ADR. */
     "strict": true,
