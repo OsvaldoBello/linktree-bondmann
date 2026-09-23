@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-09-23 19:59 UTC | `ed2f09f` | `feat/f2-registry-links` |
+| 2026-09-23 20:04 UTC | `b813e68` | `feat/f2-registry-links` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -957,6 +957,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-09-23 | `b813e68` | docs: atualizar medição do bench para Next.js 16.3.6 (108.6 KB) |
 | 2026-09-23 | `ed2f09f` | security: bumps de Next.js, sharp e nanoid; ADR-029 e DT-012 |
 | 2026-09-22 | `b4643ac` | Comercial: adicionar fichas cadastrais CPF/CNPJ e remover ficha para clientes |
 | 2026-08-10 | `d5a931b` | RH: marcar (CLT) nos títulos de Educação, Férias e Viagens |
