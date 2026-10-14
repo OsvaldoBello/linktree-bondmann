@@ -71,7 +71,7 @@ jobs:
       - name: Instalar dependências (lifecycle scripts bloqueados)
         run: npm ci --ignore-scripts
       - name: Baixar cobertura (para a região AUTO:tests)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: coverage-summary
           path: coverage
@@ -81,7 +81,7 @@ jobs:
       # contra o PROJECT.md commitado) em vez de travar num erro de download
       # que mascara a causa real.
       - name: Baixar size-limit (para a região AUTO:bench)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
           name: size-limit-json
