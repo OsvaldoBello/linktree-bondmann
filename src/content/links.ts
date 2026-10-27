@@ -29,6 +29,11 @@ export interface SectorLink {
   /** Contexto curto opcional, exibido abaixo do título. */
   readonly description?: string;
   readonly href: string;
+  /**
+   * Se definido, instrui o navegador a baixar o arquivo em vez de navegar.
+   * Pode ser um booleano ou o nome de arquivo sugerido para o download.
+   */
+  readonly download?: boolean | string;
 }
 
 export interface Sector {
@@ -124,12 +129,13 @@ export const sectors: readonly Sector[] = [
         href: 'https://bondmannquimica.sharepoint.com/sites/bd.representantes/Shared%20Documents/General/Formul%C3%A1rios%20Comerciais/2026/CADASTRO%20FILIAL.pdf',
       },
       {
-        // O docx trazia esta URL com `&amp;` (escape de XML); aqui está com `&`
-        // literal, como o SharePoint espera.
+        // Migrado de SharePoint para download direto de arquivo local (ADR-030)
+        // para facilitar o acesso de usuários e representantes.
         id: 'fb037-relacao-amostras',
         title: 'Relação de Amostras',
         description: 'FB037/10',
-        href: 'https://bondmannquimica.sharepoint.com/:w:/r/sites/bd.representantes/_layouts/15/Doc.aspx?action=edit&sourcedoc=%7Bed14340c-ad82-4121-ae80-142392adb6a4%7D&wdExp=TEAMS-TREATMENT&web=1&TeamsCID=338ba1e8-644b-45bb-a641-9534c4c8ced2',
+        href: '/downloads/FORMULARIO%20AMOSTRAS%202026%20_6_.docx',
+        download: 'FORMULARIO AMOSTRAS 2026 _6_.docx',
       },
       {
         id: 'envio-ficha-cadastral-cpf',

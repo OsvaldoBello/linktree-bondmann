@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { sectors } from './links';
 
@@ -62,9 +65,23 @@ describe('registry de setores', () => {
     }
   });
 
-  it('usa apenas https em todo href', () => {
+  it('usa apenas https ou arquivos locais existentes em /downloads/ em todo href', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
     for (const link of sectors.flatMap((sector) => sector.links)) {
-      expect(link.href, `href não-https em "${link.id}"`).toMatch(/^https:\/\//);
+      if (link.href.startsWith('/')) {
+        expect(link.href, `caminho local fora de /downloads/ em "${link.id}"`).toMatch(
+          /^\/downloads\//,
+        );
+        const relativePath = decodeURIComponent(link.href.replace(/^\//, ''));
+        const filePath = join(root, 'public', relativePath);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        const fileExists = existsSync(filePath);
+        expect(fileExists, `arquivo estático local não encontrado no disco: "${filePath}"`).toBe(
+          true,
+        );
+      } else {
+        expect(link.href, `href não-https em "${link.id}"`).toMatch(/^https:\/\//);
+      }
     }
   });
 });
