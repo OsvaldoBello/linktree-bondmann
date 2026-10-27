@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-10-27 13:34 UTC | `26a51c0` | `feat/download-amostras-fb037` |
+| 2026-10-27 13:50 UTC | `cbd8c9d` | `feat/download-amostras-fb037` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -585,7 +585,7 @@ Orçamento que **falha o CI** quando estourado:
 
 | Bundle | Tamanho | Orçamento |
 |---|---|---|
-| JS compartilhado (todas as rotas) | 108.6 KB ✅ | 120000 |
+| JS compartilhado (todas as rotas) | 110.0 KB ✅ | 120000 |
 <!-- AUTO:bench:end -->
 
 O histórico fica versionado no git, tornando qualquer regressão visível no diff.
@@ -969,6 +969,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-10-27 | `cbd8c9d` | security: bumps de Next.js, sharp e source-map-js contra novos avisos do registry |
 | 2026-10-27 | `26a51c0` | feat: download direto para relacao de amostras FB037/10 |
 | 2026-09-23 | `83e7c86` | F1 a F5: design system, registry, navegação, hardening e favicon (#5) |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
