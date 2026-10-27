@@ -105,18 +105,20 @@ function buildOverview() {
     ]),
   );
 
-  const hrefs = [...src.matchAll(/href:\s*(?:'(https:\/\/[^']+)'|([A-Z][A-Z0-9_]*))\s*,/g)]
+  const hrefs = [...src.matchAll(/href:\s*(?:'((?:https:\/\/|\/)[^']+)'|([A-Z][A-Z0-9_]*))\s*,/g)]
     .map((m) => m[1] ?? bindings.get(m[2]))
     .filter(Boolean);
 
   const domains = new Set(
-    hrefs.map((href) => {
-      try {
-        return new URL(href).hostname;
-      } catch {
-        return href;
-      }
-    }),
+    hrefs
+      .filter((href) => !href.startsWith('/'))
+      .map((href) => {
+        try {
+          return new URL(href).hostname;
+        } catch {
+          return href;
+        }
+      }),
   );
 
   return [

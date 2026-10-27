@@ -33,3 +33,7 @@ blob-report/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# documentos avulsos na raiz (os ativos servidos ficam em public/downloads/)
+/*.docx
+

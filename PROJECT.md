@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-09-23 20:04 UTC | `b813e68` | `feat/f2-registry-links` |
+| 2026-10-27 13:57 UTC | `c6c3cb0` | `feat/download-amostras-fb037` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -132,7 +132,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 **Dependências de runtime:** 3 (dentro do teto do projeto)
 | Pacote | Versão | Escopo |
 |---|---|---|
-| `next` | 16.3.6 | runtime |
+| `next` | 16.4.3 | runtime |
 | `react` | 19.2.8 | runtime |
 | `react-dom` | 19.2.8 | runtime |
 | `@axe-core/playwright` | 4.12.1 | dev |
@@ -151,7 +151,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `@vitejs/plugin-react` | 6.0.4 | dev |
 | `@vitest/coverage-v8` | 4.1.10 | dev |
 | `eslint` | 9.39.5 | dev |
-| `eslint-config-next` | 16.3.6 | dev |
+| `eslint-config-next` | 16.4.3 | dev |
 | `eslint-config-prettier` | 10.1.8 | dev |
 | `eslint-plugin-security` | 4.0.1 | dev |
 | `jsdom` | 30.0.0 | dev |
@@ -334,7 +334,7 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 39 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os formulários Ploomes de Envio de Ficha Cadastral CPF e CNPJ adicionados ao Comercial (e Ficha Cadastral para Clientes removida) em 2026-09-22, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27) e o Portal de Chamados cross-listado também no Depto. Químico e no RH em 2026-08-10 ([ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh)). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 39 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os formulários Ploomes de Envio de Ficha Cadastral CPF e CNPJ adicionados ao Comercial (e Ficha Cadastral para Clientes removida) em 2026-09-22, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27), o Portal de Chamados cross-listado também no Depto. Químico e no RH em 2026-08-10 ([ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh)) e a migração de Relação de Amostras FB037/10 de link SharePoint para download direto de arquivo Word em 2026-10-27 ([ADR-030](#adr-030--relação-de-amostras-fb03710-como-download-direto-de-arquivo-local-em-vez-de-link-sharepoint)). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
@@ -352,7 +352,7 @@ Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019]
 | FB074/00 · Solicitação de Teste | Ploomes |
 | Ficha Cadastral Matriz | SharePoint (PDF) |
 | Ficha Cadastral Filial | SharePoint (PDF) |
-| FB037/10 · Relação de Amostras | SharePoint (Word) |
+| FB037/10 · Relação de Amostras | Download direto (Word) |
 | Envio de Ficha Cadastral CPF | Ploomes |
 | Envio de Ficha Cadastral CNPJ | Ploomes |
 
@@ -456,10 +456,11 @@ Todo `<LinkButton>` renderiza `target="_blank" rel="noopener noreferrer nofollow
 
 `links-schema.ts` exige:
 
-- Protocolo `https://` — `http://` é rejeitado
+- Protocolo `https://` (ou caminho local seguro em `/downloads/`) — `http://`, caminhos fora de `/downloads/` e path traversal (`..`, `\`, `//`) são rejeitados
 - Hostname na **allowlist**: `*.bondmannquimica.sharepoint.com`, `forms.ploomes.com`, `docs.google.com`, `drive.google.com`, `*.up.railway.app`, `chatgpt.com` (GPTs da AlquimIA — [ADR-025](#adr-025--gpts-da-alquimia-direto-no-registry-chatgptcom-na-allowlist-linktree-fora); `linktr.ee` saiu da lista no mesmo movimento, por não ter mais nenhum link). `forms.cloud.microsoft` (Microsoft Forms do RH, F2) saiu da lista em 2026-08-07 quando os 8 links de políticas de RH (todos SharePoint) substituíram os formulários — mesmo padrão do `linktr.ee`.
 - Hostname fora da **denylist de encurtadores**: `bit.ly`, `tinyurl.com`, `t.co`, `goo.gl`, `ow.ly`, `is.gd`
 - Slug de setor único, id único dentro do setor, título não vazio
+- Para links locais, o arquivo correspondente deve existir fisicamente em `public/downloads/` (validado por teste automatizado)
 
 Roda em build. **Um link malicioso ou com typo não chega a produção.**
 
@@ -532,7 +533,7 @@ Todo deploy de produção é rastreável a um commit assinado, revisado, com CI 
 | Métrica | Cobertura | Limiar |
 |---|---|---|
 | Linhas | 100.0% ✅ | 85% |
-| Branches | 99.1% ✅ | 90% |
+| Branches | 99.2% ✅ | 90% |
 | Funções | 100.0% ✅ | 85% |
 | Statements | 100.0% ✅ | 85% |
 <!-- AUTO:tests:end -->
@@ -584,7 +585,7 @@ Orçamento que **falha o CI** quando estourado:
 
 | Bundle | Tamanho | Orçamento |
 |---|---|---|
-| JS compartilhado (todas as rotas) | 108.6 KB ✅ | 120000 |
+| JS compartilhado (todas as rotas) | 110.0 KB ✅ | 120000 |
 <!-- AUTO:bench:end -->
 
 O histórico fica versionado no git, tornando qualquer regressão visível no diff.
@@ -921,6 +922,17 @@ Com isso, `npm audit --audit-level=high --omit=dev` volta a reportar zero vulner
 
 Adicionalmente, resolve o atrito previsto no **DT-012**: com mantenedor solo, a regra `required_approving_review_count: 1` impedia o merge do próprio criador do PR. A regra foi atualizada para viabilizar o squash merge de `feat/f2-registry-links` na `main`.
 
+### ADR-030 — Relação de Amostras FB037/10 como download direto de arquivo local em vez de link SharePoint
+**Data:** 2026-10-27 · **Status:** aceito · **altera o §6 e o §7**
+
+O link do formulário de Relação de Amostras (FB037/10) do setor Comercial apontava para um documento hospedado no SharePoint da empresa (`bondmannquimica.sharepoint.com`). Usuários e representantes externos vinham enfrentando dificuldades recorrentes de acesso causadas pela exigência de login institucional do Microsoft 365, concessão de permissões corporativas e comportamento do visualizador Teams/Word Online.
+
+A pedido do usuário, o formulário (`FORMULARIO AMOSTRAS 2026 _6_.docx`) passou a ser hospedado diretamente na aplicação como ativo estático servido em `/downloads/` e baixado imediatamente com um clique via atributo HTML5 `download="FORMULARIO AMOSTRAS 2026 _6_.docx"`.
+
+**Segurança e validação (§7).** `links-schema.ts` foi expandido para reconhecer caminhos locais seguros iniciados por `/downloads/`, rejeitando expressamente path traversal (`..`), barras invertidas (`\`), URLs relativas a protocolo (`//`) e caminhos fora de `/downloads/`. Todas as URLs externas continuam restritas a `https://` sob a allowlist estrita do projeto.
+
+**Componentes e testes (§9).** `<LinkButton>` passou a suportar a propriedade `download` no elemento `<a>`, renderizando o ícone específico de download para melhor usabilidade e mantendo `rel="noopener noreferrer nofollow"` e `target="_blank"`. Foi adicionado teste unitário em `links.test.ts` que valida a existência física no disco (`public/downloads/`) de qualquer arquivo local referenciado no registry, impedindo links locais quebrados em build.
+
 ## 12. Débito técnico
 
 | ID | Item | Prioridade | Contexto |
@@ -957,33 +969,11 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
-| 2026-09-23 | `b813e68` | docs: atualizar medição do bench para Next.js 16.3.6 (108.6 KB) |
-| 2026-09-23 | `ed2f09f` | security: bumps de Next.js, sharp e nanoid; ADR-029 e DT-012 |
-| 2026-09-22 | `b4643ac` | Comercial: adicionar fichas cadastrais CPF/CNPJ e remover ficha para clientes |
-| 2026-08-10 | `d5a931b` | RH: marcar (CLT) nos títulos de Educação, Férias e Viagens |
-| 2026-08-10 | `87b4379` | fix: busca não atribui mais um setor a link cross-listado |
-| 2026-08-10 | `4896fb9` | fix: override nanoid contra aviso GHSA-2v37-7h3g-55p8 |
-| 2026-08-10 | `b47521c` | Portal de Chamados cross-listado no Depto. Químico e no RH |
-| 2026-08-07 | `bdf6046` | RH: trocar formulários de ajuda de custo por 8 links de políticas |
-| 2026-08-04 | `fce8f72` | docs: DT-017 — producao parou de acompanhar esta branch |
-| 2026-08-04 | `38e675e` | dev.bat libera a porta 3000; AlquimIA vira 5 GPTs no registry |
-| 2026-07-28 | `c784aaa` | recalibrar categories:performance também — mesma variação já documentada no ADR-023 |
-| 2026-07-28 | `e0cbb03` | recalibrar orçamento de performance (§10) contra medição real; numberOfRuns 3 permanente |
-| 2026-07-28 | `8fa4b5a` | investigação DT-020: 3 execuções do Lighthouse (mediana) + upload dos relatórios |
-| 2026-07-28 | `61b1ee4` | docs: registrar a primeira medição real do bench — CI são, orçamento não |
-| 2026-07-28 | `95444c8` | fix: upload-artifact ignora .size-limit.json por ser dotfile |
-| 2026-07-28 | `42c8168` | fix: chromeFlags do Lighthouse CI precisa ser string, não array |
-| 2026-07-28 | `73d39b0` | fix: bench e doc-drift falhavam em todo push — sandbox do Chrome e artefato ausente |
-| 2026-07-28 | `2c22658` | F6: dashboard comercial cross-listado e busca client-side na home |
-| 2026-07-28 | `febf9ce` | docs: corrigir o DT-017 — produção deploya desta branch, não de main |
-| 2026-07-28 | `a5c3a77` | ajustes de home: texto, ordem alfabética, fundo fixo e favicon legível |
-| 2026-07-28 | `5ad331b` | favicon verde + unsafe-eval na CSP só em desenvolvimento |
-| 2026-07-28 | `cda9711` | F5: hardening da aplicação e do pipeline |
-| 2026-07-28 | `6bff187` | F3 + F4: navegação em dois níveis (home → setor), redesenho visual Linktree |
-| 2026-07-27 | `9798cd8` | F2: registry de links — schema Zod, 7 links do RH, DT-002 resolvido |
-| 2026-07-27 | `9c181ff` | F1: design system — tokens do manual, Fira Sans, Logo e componentes base |
-| 2026-07-27 | `e1bb558` | docs: fechar o gate da F0.5 — branch protection ativa, repo público |
-| 2026-07-27 | `a7ff485` | fix: semgrep --config auto exige métricas; doc:check compara commit que não existe ainda |
+| 2026-10-27 | `45c5628` | docs: atualizar medicao do bench para Next.js 16.4.3 (110.0 KB) |
+| 2026-10-27 | `cbd8c9d` | security: bumps de Next.js, sharp e source-map-js contra novos avisos do registry |
+| 2026-10-27 | `26a51c0` | feat: download direto para relacao de amostras FB037/10 |
+| 2026-09-23 | `47449e9` | chore(deps): Bump js-yaml from 3.15.0 to 3.15.2 (#29) |
+| 2026-09-23 | `83e7c86` | F1 a F5: design system, registry, navegação, hardening e favicon (#5) |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
 | 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
 <!-- AUTO:changelog:end -->

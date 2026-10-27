@@ -29,32 +29,71 @@ function isAllowedHostname(hostname: string): boolean {
   );
 }
 
-const secureUrlSchema = z.url().superRefine((href, ctx) => {
-  const { protocol, hostname } = new URL(href);
+const secureUrlSchema = z
+  .string()
+  .min(1)
+  .superRefine((href, ctx) => {
+    if (href.startsWith('/')) {
+      if (href.startsWith('//') || href.includes('\\') || href.includes('..')) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `caminho local malformado ou inseguro em "${href}"`,
+        });
+        return;
+      }
 
-  if (protocol !== 'https:') {
-    ctx.addIssue({
-      code: 'custom',
-      message: `protocolo inseguro em "${href}" — apenas https:// é permitido`,
-    });
-    return;
-  }
+      if (!href.startsWith('/downloads/')) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `caminho local fora de /downloads/: "${href}"`,
+        });
+        return;
+      }
 
-  if (DENYLISTED_HOSTNAMES.has(hostname)) {
-    ctx.addIssue({ code: 'custom', message: `domínio de encurtador proibido: "${hostname}"` });
-    return;
-  }
+      return;
+    }
 
-  if (!isAllowedHostname(hostname)) {
-    ctx.addIssue({ code: 'custom', message: `domínio fora da allowlist: "${hostname}"` });
-  }
-});
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(href);
+    } catch {
+      ctx.addIssue({
+        code: 'custom',
+        message: `URL inválida: "${href}"`,
+      });
+      return;
+    }
+
+    if (parsedUrl.protocol !== 'https:') {
+      ctx.addIssue({
+        code: 'custom',
+        message: `protocolo inseguro em "${href}" — apenas https:// é permitido`,
+      });
+      return;
+    }
+
+    if (DENYLISTED_HOSTNAMES.has(parsedUrl.hostname)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `domínio de encurtador proibido: "${parsedUrl.hostname}"`,
+      });
+      return;
+    }
+
+    if (!isAllowedHostname(parsedUrl.hostname)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `domínio fora da allowlist: "${parsedUrl.hostname}"`,
+      });
+    }
+  });
 
 const sectorLinkSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1).optional(),
   href: secureUrlSchema,
+  download: z.union([z.boolean(), z.string().min(1)]).optional(),
 });
 
 const sectorSchema = z.object({
