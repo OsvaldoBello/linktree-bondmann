@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-10-27 13:50 UTC | `cbd8c9d` | `feat/download-amostras-fb037` |
+| 2026-10-27 13:57 UTC | `c6c3cb0` | `feat/download-amostras-fb037` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -969,8 +969,10 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-10-27 | `45c5628` | docs: atualizar medicao do bench para Next.js 16.4.3 (110.0 KB) |
 | 2026-10-27 | `cbd8c9d` | security: bumps de Next.js, sharp e source-map-js contra novos avisos do registry |
 | 2026-10-27 | `26a51c0` | feat: download direto para relacao de amostras FB037/10 |
+| 2026-09-23 | `47449e9` | chore(deps): Bump js-yaml from 3.15.0 to 3.15.2 (#29) |
 | 2026-09-23 | `83e7c86` | F1 a F5: design system, registry, navegação, hardening e favicon (#5) |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
 | 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
