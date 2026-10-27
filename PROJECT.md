@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-10-27 13:14 UTC | `83e7c86` | `feat/download-amostras-fb037` |
+| 2026-10-27 13:34 UTC | `26a51c0` | `feat/download-amostras-fb037` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -132,7 +132,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 **Dependências de runtime:** 3 (dentro do teto do projeto)
 | Pacote | Versão | Escopo |
 |---|---|---|
-| `next` | 16.3.6 | runtime |
+| `next` | 16.4.3 | runtime |
 | `react` | 19.2.8 | runtime |
 | `react-dom` | 19.2.8 | runtime |
 | `@axe-core/playwright` | 4.12.1 | dev |
@@ -151,7 +151,7 @@ O manual define cores próprias para as sub-marcas AUTO, FLUID, INDUSTRY, MAX SE
 | `@vitejs/plugin-react` | 6.0.4 | dev |
 | `@vitest/coverage-v8` | 4.1.10 | dev |
 | `eslint` | 9.39.5 | dev |
-| `eslint-config-next` | 16.3.6 | dev |
+| `eslint-config-next` | 16.4.3 | dev |
 | `eslint-config-prettier` | 10.1.8 | dev |
 | `eslint-plugin-security` | 4.0.1 | dev |
 | `jsdom` | 30.0.0 | dev |
@@ -969,6 +969,7 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
+| 2026-10-27 | `26a51c0` | feat: download direto para relacao de amostras FB037/10 |
 | 2026-09-23 | `83e7c86` | F1 a F5: design system, registry, navegação, hardening e favicon (#5) |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
 | 2026-07-27 | `c71c6db` | F0 + F0.5: fundação do projeto e hardening do pipeline de CI/CD |
