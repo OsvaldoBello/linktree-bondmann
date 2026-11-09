@@ -134,8 +134,8 @@ export const sectors: readonly Sector[] = [
         id: 'fb037-relacao-amostras',
         title: 'Relação de Amostras',
         description: 'FB037/10',
-        href: '/downloads/FORMULARIO%20AMOSTRAS%202026%20_6_.docx',
-        download: 'FORMULARIO AMOSTRAS 2026 _6_.docx',
+        href: '/downloads/FORMULARIO%20AMOSTRAS%202026.docx',
+        download: 'FORMULARIO AMOSTRAS 2026.docx',
       },
       {
         id: 'envio-ficha-cadastral-cpf',

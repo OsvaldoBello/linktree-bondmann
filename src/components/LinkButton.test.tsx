@@ -75,13 +75,13 @@ describe('<LinkButton>', () => {
         link={{
           id: 'amostras',
           title: 'Relação de Amostras',
-          href: '/downloads/FORMULARIO%20AMOSTRAS%202026%20_6_.docx',
-          download: 'FORMULARIO AMOSTRAS 2026 _6_.docx',
+          href: '/downloads/FORMULARIO%20AMOSTRAS%202026.docx',
+          download: 'FORMULARIO AMOSTRAS 2026.docx',
         }}
       />,
     );
     const link = screen.getByRole('link', { name: 'Relação de Amostras' });
-    expect(link).toHaveAttribute('download', 'FORMULARIO AMOSTRAS 2026 _6_.docx');
-    expect(link).toHaveAttribute('href', '/downloads/FORMULARIO%20AMOSTRAS%202026%20_6_.docx');
+    expect(link).toHaveAttribute('download', 'FORMULARIO AMOSTRAS 2026.docx');
+    expect(link).toHaveAttribute('href', '/downloads/FORMULARIO%20AMOSTRAS%202026.docx');
   });
 });

@@ -9,7 +9,7 @@
 <!-- AUTO:updated:start -->
 | Última sincronização | Commit | Branch |
 |---|---|---|
-| 2026-10-27 13:57 UTC | `c6c3cb0` | `feat/download-amostras-fb037` |
+| 2026-11-09 19:39 UTC | `64beb67` | `feat/atualizar-formulario-amostras` |
 <!-- AUTO:updated:end -->
 
 ---
@@ -334,7 +334,7 @@ O projeto na Vercel já existe (`osvaldo-s-projects3/links-bondmann`) e `links-b
 
 ## 6. Inventário de conteúdo
 
-**7 setores, 39 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os formulários Ploomes de Envio de Ficha Cadastral CPF e CNPJ adicionados ao Comercial (e Ficha Cadastral para Clientes removida) em 2026-09-22, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27), o Portal de Chamados cross-listado também no Depto. Químico e no RH em 2026-08-10 ([ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh)) e a migração de Relação de Amostras FB037/10 de link SharePoint para download direto de arquivo Word em 2026-10-27 ([ADR-030](#adr-030--relação-de-amostras-fb03710-como-download-direto-de-arquivo-local-em-vez-de-link-sharepoint)). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
+**7 setores, 39 links.** Fonte original: `Links externos.docx`, mais o Dashboard Comercial adicionado ao setor Comercial em 2026-07-28, os formulários Ploomes de Envio de Ficha Cadastral CPF e CNPJ adicionados ao Comercial (e Ficha Cadastral para Clientes removida) em 2026-09-22, os 5 GPTs da AlquimIA que substituíram o hub do Depto. Químico em 2026-08-04, os 8 links de políticas de RH enviados diretamente pelo usuário em 2026-08-07 (substituíram os 7 formulários Microsoft Forms de ajuda de custo/contratação que ocupavam o setor desde 2026-07-27), o Portal de Chamados cross-listado também no Depto. Químico e no RH em 2026-08-10 ([ADR-026](#adr-026--portal-de-chamados-cross-listado-também-no-depto-químico-e-no-rh)) e a migração de Relação de Amostras FB037/10 de link SharePoint para download direto de arquivo Word em 2026-10-27 ([ADR-030](#adr-030--relação-de-amostras-fb03710-como-download-direto-de-arquivo-local-em-vez-de-link-sharepoint), com formulário atualizado em 2026-11-09). Este inventário é a referência humana; a verdade executável é `src/content/links.ts`.
 
 Os setores aparecem abaixo — e na home — em **ordem alfabética** ([ADR-019](#adr-019--ordem-alfabética-no-registry-e-textura-de-fundo-ancorada-no-viewport)).
 
@@ -927,7 +927,7 @@ Adicionalmente, resolve o atrito previsto no **DT-012**: com mantenedor solo, a 
 
 O link do formulário de Relação de Amostras (FB037/10) do setor Comercial apontava para um documento hospedado no SharePoint da empresa (`bondmannquimica.sharepoint.com`). Usuários e representantes externos vinham enfrentando dificuldades recorrentes de acesso causadas pela exigência de login institucional do Microsoft 365, concessão de permissões corporativas e comportamento do visualizador Teams/Word Online.
 
-A pedido do usuário, o formulário (`FORMULARIO AMOSTRAS 2026 _6_.docx`) passou a ser hospedado diretamente na aplicação como ativo estático servido em `/downloads/` e baixado imediatamente com um clique via atributo HTML5 `download="FORMULARIO AMOSTRAS 2026 _6_.docx"`.
+A pedido do usuário, o formulário (`FORMULARIO AMOSTRAS 2026 _6_.docx`, atualizado em 2026-11-09 para `FORMULARIO AMOSTRAS 2026.docx`) passou a ser hospedado diretamente na aplicação como ativo estático servido em `/downloads/` e baixado imediatamente com um clique via atributo HTML5 `download="FORMULARIO AMOSTRAS 2026.docx"`.
 
 **Segurança e validação (§7).** `links-schema.ts` foi expandido para reconhecer caminhos locais seguros iniciados por `/downloads/`, rejeitando expressamente path traversal (`..`), barras invertidas (`\`), URLs relativas a protocolo (`//`) e caminhos fora de `/downloads/`. Todas as URLs externas continuam restritas a `https://` sob a allowlist estrita do projeto.
 
@@ -969,9 +969,11 @@ Histórico completo:
 
 | Data | Commit | Descrição |
 |---|---|---|
-| 2026-10-27 | `45c5628` | docs: atualizar medicao do bench para Next.js 16.4.3 (110.0 KB) |
-| 2026-10-27 | `cbd8c9d` | security: bumps de Next.js, sharp e source-map-js contra novos avisos do registry |
-| 2026-10-27 | `26a51c0` | feat: download direto para relacao de amostras FB037/10 |
+| 2026-11-09 | `64beb67` | feat: atualizar formulario de relacao de amostras FB037/10 para versao 2026 |
+| 2026-10-27 | `0519e9f` | chore(deps): Bump brace-expansion from 1.1.16 to 1.1.21 (#51) |
+| 2026-10-27 | `49c3a4c` | chore(deps): Bump proxy-addr from 2.0.7 to 2.0.8 (#49) |
+| 2026-10-27 | `88ea56c` | chore(deps): Bump compression from 1.8.1 to 1.8.2 (#50) |
+| 2026-10-27 | `0fd1e57` | feat: download direto para relação de amostras FB037/10 (#54) |
 | 2026-09-23 | `47449e9` | chore(deps): Bump js-yaml from 3.15.0 to 3.15.2 (#29) |
 | 2026-09-23 | `83e7c86` | F1 a F5: design system, registry, navegação, hardening e favicon (#5) |
 | 2026-07-27 | `688e80b` | ci: bloquear Dependabot de propor eslint/typescript acima do limite do ADR-008 |
